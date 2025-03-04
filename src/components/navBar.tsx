@@ -28,23 +28,25 @@ function NavBar() {
   }, [isOpen]);
 
   return (
-    <nav className="w-full bg-white shadow-md px-6 py-4 relative">
+    <nav className="w-full bg-gradient-to-r from-green-700 via-green-500 to-green-400 shadow-md px-6 py-4 relative">
       <div className="flex justify-between items-center">
-        {/* Logo */}
+        {/* Logo avec fond blanc et padding */}
         <Link href="/">
-          <Image
-            src="/images/okalogo.png"
-            alt="Oka Logo"
-            width={100}
-            height={100}
-            className="cursor-pointer"
-          />
+          <div className="bg-white p-2 rounded-md shadow-lg">
+            <Image
+              src="/images/okalogo.png"
+              alt="Oka Logo"
+              width={100}
+              height={100}
+              className="cursor-pointer"
+            />
+          </div>
         </Link>
 
         {/* Bouton Menu Hamburger (Mobile) */}
         <div className="md:hidden">
           <button
-            className="text-gray-700 focus:outline-none"
+            className="text-white focus:outline-none"
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? <X size={28} /> : <Menu size={28} />}
@@ -52,24 +54,24 @@ function NavBar() {
         </div>
 
         {/* Menu Principal (Desktop) */}
-        <ul className="hidden md:flex gap-6 text-gray-700 font-medium">
+        <ul className="hidden md:flex gap-6 text-white font-medium">
           <li>
-            <Link href="/" className="hover:text-green-600 transition">
+            <Link href="/" className="hover:text-green-200 transition">
               Accueil
             </Link>
           </li>
           <li>
-            <Link href="/about" className="hover:text-green-600 transition">
+            <Link href="/about" className="hover:text-green-200 transition">
               À propos
             </Link>
           </li>
           <li>
-            <Link href="/faq" className="hover:text-green-600 transition">
+            <Link href="/faq" className="hover:text-green-200 transition">
               FAQ
             </Link>
           </li>
           <li>
-            <Link href="/contact" className="hover:text-green-600 transition">
+            <Link href="/contact" className="hover:text-green-200 transition">
               Contact
             </Link>
           </li>
