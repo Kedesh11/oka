@@ -4,7 +4,7 @@ import TopNav from "@/components/topNav";
 
 export default function Home() {
   return (
-    <div className="">
+    <div className="px-12">
       <TopNav />
       <NavBar />
     </div>
