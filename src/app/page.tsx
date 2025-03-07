@@ -10,7 +10,7 @@ import Hero from "@/components/hero";
 
 export default function Home() {
   return (
-    <div className="md:px-12">
+    <div className="">
       <NavBar />
       <Hero/>
       <Province />

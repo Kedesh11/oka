@@ -28,11 +28,11 @@ function NavBar() {
   }, [isOpen]);
 
   return (
-    <nav className="w-full bg-gradient-to-r from-green-700 via-green-500 to-green-400 shadow-md px-6 py-2 relative">
+    <nav className="w-full bg-[#01be65] shadow-md px-6 py-2 relative">
       <div className="flex justify-between items-center">
         {/* Logo avec fond blanc et padding */}
         <Link href="/">
-          <div className="bg-white p-2 rounded-md shadow-lg">
+          <div className="">
             <Image
               src="/images/okalogo.png"
               alt="Oka Logo"
