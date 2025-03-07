@@ -1,9 +1,9 @@
 import React from 'react'
 
-const train = () => {
+const FormTrain = () => {
   return (
-    <div>train</div>
+    <div> FormTtrain</div>
   )
 }
 
-export default train
+export default FormTrain

@@ -1,9 +1,9 @@
 import React from 'react'
 
-const avion = () => {
+const FormAvion = () => {
   return (
     <div>avion</div>
   )
 }
 
-export default avion
+export default FormAvion

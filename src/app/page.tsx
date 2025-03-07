@@ -5,11 +5,13 @@ import DestinationCard from "@/components/card-home/destinationCard";
 import DestinationCardTwo from "@/components/card-home/destinationCardTwo";
 import DestinationCardThree from "@/components/card-home/destinationCardThree";
 import DestinationCardFor from "@/components/card-home/destinationCardFor";
+import Hero from "@/components/hero";
 
 export default function Home() {
   return (
-    <div className="md:px-12 md:py-2 ">
+    <div className="md:px-12">
       <NavBar />
+      <Hero/>
       <Province />
       <div className="flex justify-center items-center gap-4 p-4 flex-wrap md:flex-nowrap">
         <div className="w-full md:w-1/4">

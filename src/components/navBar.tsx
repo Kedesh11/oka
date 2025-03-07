@@ -28,7 +28,7 @@ function NavBar() {
   }, [isOpen]);
 
   return (
-    <nav className="w-full bg-gradient-to-r from-green-700 via-green-500 to-green-400 shadow-md px-6 py-4 relative">
+    <nav className="w-full bg-gradient-to-r from-green-700 via-green-500 to-green-400 shadow-md px-6 py-2 relative">
       <div className="flex justify-between items-center">
         {/* Logo avec fond blanc et padding */}
         <Link href="/">
