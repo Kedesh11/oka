@@ -41,7 +41,16 @@ const Hero = () => {
     }} 
       className='w-full h-[500px] flex flex-row items-center xl:justify-between justify-center xl:px-10 px-2'
     >
-      <div className='hidden xl:flex'></div>
+      <div className='hidden xl:block w-[60%]'>
+        <h1 className='text-7xl font-bold text-white leading-[82px]'>
+        Achetez vos {' '}
+        <span className='text-[#01be65]'>
+          billets de voyage {' '} 
+        </span> 
+          en un click sur <span className='text-[#01be65]'>OKA VOYAGE</span> 
+        </h1>
+      </div>
+
       <div className='bg-black/10 xl:w-[400px] w-[380px] rounded-md border border-white xl:p-8 p-3'>
          <div className='flex flex-row justify-around items-center'>
             {type_voyage.map((item, index) => (
