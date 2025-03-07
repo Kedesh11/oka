@@ -6,11 +6,13 @@ import DestinationCard from "@/components/card-home/destinationCard";
 import DestinationCardTwo from "@/components/card-home/destinationCardTwo";
 import DestinationCardThree from "@/components/card-home/destinationCardThree";
 import DestinationCardFor from "@/components/card-home/destinationCardFor";
+import Hero from "@/components/hero";
 
 export default function Home() {
   return (
-    <div className="md:px-12 md:py-2 ">
+    <div className="md:px-12">
       <NavBar />
+      <Hero/>
       <Province />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
         <div className="w-full">

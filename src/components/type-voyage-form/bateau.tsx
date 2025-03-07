@@ -1,7 +1,9 @@
 import React from 'react'
 
-export const bateau = () => {
+const FormBateau = () => {
   return (
     <div>bateau</div>
   )
 }
+
+export default FormBateau
