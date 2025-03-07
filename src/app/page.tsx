@@ -1,5 +1,6 @@
 import Image from "next/image";
 import NavBar from "@/components/navBar";
+import Footer from "@/components/footer";
 import Province from "@/components/province";
 import DestinationCard from "@/components/card-home/destinationCard";
 import DestinationCardTwo from "@/components/card-home/destinationCardTwo";
@@ -25,6 +26,7 @@ export default function Home() {
           <DestinationCardFor />
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
