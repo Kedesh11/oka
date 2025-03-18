@@ -11,7 +11,7 @@ const Page = () => {
 
       {/* Section avec image de fond */}
       <section
-        className="relative bg-center bg-no-repeat bg-cover h-40 flex items-center justify-center"
+        className="relative bg-center bg-no-repeat bg-cover h-56 flex items-center justify-center"
         style={{
           backgroundImage: "url('/images/Aéroport-Libreville.jpg')",
         }}
