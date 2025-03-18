@@ -28,7 +28,7 @@ function NavBar() {
   }, [isOpen]);
 
   return (
-    <nav className="w-full bg-[#01be65] shadow-md px-6 py-2 relative">
+    <nav className="w-full fixed top-0 left-0  z-50 bg-[#01be65] shadow-md px-6 py-2">
       <div className="flex justify-between items-center">
         {/* Logo avec fond blanc et padding */}
         <Link href="/">
@@ -61,7 +61,7 @@ function NavBar() {
             </Link>
           </li>
           <li>
-            <Link href="/about" className="hover:text-green-200 transition">
+            <Link href="/a-propos" className="hover:text-green-200 transition">
               À propos
             </Link>
           </li>
@@ -71,7 +71,7 @@ function NavBar() {
             </Link>
           </li>
           <li>
-            <Link href="/contact" className="hover:text-green-200 transition">
+            <Link href="/conctact" className="hover:text-green-200 transition">
               Contact
             </Link>
           </li>
@@ -96,7 +96,7 @@ function NavBar() {
             </li>
             <li>
               <Link
-                href="/about"
+                href="/a-propos"
                 className="block py-2 px-4 hover:bg-gray-100 rounded"
                 onClick={() => setIsOpen(false)}
               >
@@ -114,7 +114,7 @@ function NavBar() {
             </li>
             <li>
               <Link
-                href="/contact"
+                href="/conctact"
                 className="block py-2 px-4 hover:bg-gray-100 rounded"
                 onClick={() => setIsOpen(false)}
               >

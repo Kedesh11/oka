@@ -27,8 +27,8 @@ function destinationCardThree() {
         {/* Contenu de la carte */}
         <CardContent>
           <p className="text-black text-sm">
-            Qualité et économies vont de pair avec nos offres exceptionnelles
-            adaptées à votre budget.
+            Qualité et économies vont de pair avec nos offres exceptionnelles et
+            adaptées .
           </p>
         </CardContent>
       </Card>

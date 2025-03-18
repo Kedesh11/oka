@@ -28,7 +28,7 @@ function destinationCardTwo() {
         <CardContent>
           <p className="text-black text-sm">
             Un service client fiable et accessible, conçu pour vous offrir une
-            expérience fluide et sans souci.
+            expérience fluide.
           </p>
         </CardContent>
       </Card>
