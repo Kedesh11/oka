@@ -1,62 +1,130 @@
-import React from "react";
+"use client"; // Force le rendu côté client
+
+import React, { useState, useEffect } from "react";
 import NavBar from "@/components/navBar";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import Footer from "@/components/footer";
 
-const page = () => {
+const accordionData = [
+  {
+    title: "Comment acheter un billet ?",
+    content:
+      "Pour acheter un billet, sélectionnez votre destination, choisissez votre date et votre compagnie de transport, puis procédez au paiement en ligne.",
+  },
+  {
+    title: "Quels sont les moyens de paiement acceptés ?",
+    content:
+      "Nous acceptons les paiements via carte bancaire, mobile money et PayPal pour un achat rapide et sécurisé.",
+  },
+  {
+    title: "Puis-je modifier ou annuler ma réservation ?",
+    content:
+      "Oui, vous pouvez modifier ou annuler votre réservation jusqu'à 24 heures avant votre départ via votre espace client.",
+  },
+];
+
+const Page = () => {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true); // Assure que le composant est monté avant le rendu
+  }, []);
+
+  const toggleAccordion = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
   return (
-    <div>
+    <div className="min-h-screen">
       <NavBar />
-      {/* Section avec image de fond */}
+
+      {/* Section avec image de fond (cachée sur mobile et tablette) */}
       <section
-        className="relative bg-center bg-no-repeat bg-cover h-40 flex items-center justify-center"
-        style={{
-          backgroundImage: "url('/images/Aéroport-Libreville.jpg')",
-        }}
+        className="relative bg-center bg-no-repeat bg-cover h-40 md:flex items-center justify-center hidden "
+        style={{ backgroundImage: "url('/images/Aéroport-Libreville.jpg')" }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-        <h1 className="relative z-10 text-3xl text-white font-bold">
-          A propos de nous
+        <h1 className="relative z-10 text-3xl text-center  text-white font-bold">
+          À propos de nous
         </h1>
       </section>
 
-      {/* A propos de Oka-voyage  */}
-      <div className="flex justify-center items-center gap-10 py-10 px-5">
-        <div className="flex justify-center items-center py-10 w-1/2 bg-green-500 border-2 border-black">
+      {/* A propos de Oka-voyage (Visible uniquement en mode ordinateur) */}
+      <div className="flex flex-col sm:flex-col md:flex-col lg:flex-row xl:flex-row justify-center items-center px-4 gap-5 py-10 ">
+        {/* Logo (caché sur mobile et tablette) */}
+        <div className="flex justify-center items-center py-10 w-1/2  bg-[#01be65] border-2 border-black">
           <Image
             src="/images/okalogo.png"
-            alt="le logo de Oka-voyage"
-            width={400}
-            height={400}
+            alt="Logo de Oka-voyage"
+            width={300}
+            height={300}
+            className=""
           />
         </div>
-        <div className="w-1/2">
-          <div>
-            <p>
-              <span className="text-green-500 font-bold text-xl">
-                Oka-Voyage
-              </span>{" "}
-              est votre solution pratique et sécurisée pour acheter vos billets
-              de voyage en ligne au Gabon. Grâce à notre plateforme intuitive,
-              réservez facilement vos trajets en bus en quelques clics, sans
-              avoir à vous déplacer. Nous vous offrons un large choix de
-              compagnies, des horaires flexibles et des tarifs avantageux pour
-              rendre vos déplacements plus simples et accessibles. Optez pour un
-              service rapide, fiable et 100 % digital avec Oka Voyage ! 🚍✨
-            </p>
-          </div>
+
+        {/* Texte visible sur mobile, tablette et ordinateur */}
+        <div className=" max-w-lg md:w-full sm:w-full lg:w-1/2 xl:w-1/2 px-4  text-left">
+          <p>
+            <span className="text-green-500 font-bold text-xl">Oka-Voyage</span>{" "}
+            est votre solution pratique et sécurisée pour acheter vos billets de
+            voyage en ligne au Gabon. Grâce à notre plateforme intuitive,
+            réservez facilement vos trajets en bus en quelques clics, sans avoir
+            à vous déplacer.
+          </p>
+
+          {/* Bouton */}
           <div className="pt-5">
             <Button className="bg-green-500 h-12 w-34 hover:bg-green-700">
-              <Link href="/" className="">
-                Acheter un billet
-              </Link>
+              <Link href="/">Acheter un billet</Link>
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Section Accordéons */}
+      {isClient && (
+        <div className="px-10 md:px-20 bg-slate-100  py-16 rounded  ">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Question fréquentes
+          </h2>
+          {accordionData.map((item, index) => (
+            <div key={index} className="border-b border-gray-300">
+              <button
+                className="flex justify-between w-full py-4 text-left text-gray-700 font-medium focus:outline-none"
+                onClick={() => toggleAccordion(index)}
+              >
+                <span>{item.title}</span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${
+                    openIndex === index ? "rotate-180" : ""
+                  }`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 10 6"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 5L5 1 1 5"
+                  />
+                </svg>
+              </button>
+              {openIndex === index && (
+                <div className="py-4 text-gray-600">{item.content}</div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {/* footer */}
+      <Footer />
     </div>
   );
 };
 
-export default page;
+export default Page;
