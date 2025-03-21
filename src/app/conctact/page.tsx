@@ -14,7 +14,7 @@ const Page = () => {
       <section className="flex flex-col md:flex-row h-[100vh]">
         {/* Partie Image de contact */}
         <div
-          className="w-full h-full md:w-1/2 flex justify-center items-center bg-cover bg-center relative text-white p-8"
+          className="hidden w-full h-full md:w-1/2 md:flex md:justify-center md:items-center bg-cover bg-center relative text-white p-8"
           style={{
             backgroundImage: "url('/images/Aéroport-Libreville.jpg')",
           }}

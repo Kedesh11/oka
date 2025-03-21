@@ -16,12 +16,47 @@ const accordionData = [
   {
     title: "Quels sont les moyens de paiement acceptés ?",
     content:
-      "Nous acceptons les paiements via carte bancaire, mobile money et PayPal pour un achat rapide et sécurisé.",
+      "Nous acceptons les paiements via  MOOV MONEY  et AIRTEL MONEY pour un achat rapide et sécurisé.",
   },
   {
     title: "Puis-je modifier ou annuler ma réservation ?",
     content:
-      "Oui, vous pouvez modifier ou annuler votre réservation jusqu'à 24 heures avant votre départ via votre espace client.",
+      "Oui, vous pouvez modifier ou annuler votre réservation jusqu'à 48h heures avant votre départ via votre espace client.",
+  },
+  {
+    title: "Quels sont les documents nécessaires pour voyager ?",
+    content:
+      "Vous devez présenter une pièce d'identité valide et votre billet électronique pour embarquer dans le bus.",
+  },
+  {
+    title: "Les billets sont-ils remboursables ?",
+    content:
+      "Les billets ne sont pas remboursables, mais vous pouvez les modifier sous certaines conditions en contactant notre service client.",
+  },
+  {
+    title: "Comment contacter le service client ?",
+    content:
+      "Vous pouvez nous contacter via notre chat en ligne, par e-mail à support@oka-voyage.com ou par téléphone au +241 77-17-28-20.",
+  },
+  {
+    title: "Puis-je réserver plusieurs billets en une seule commande ?",
+    content:
+      "Oui, vous pouvez réserver plusieurs billets en une seule transaction en ajoutant plusieurs passagers lors de la réservation.",
+  },
+  {
+    title: "Quels sont les avantages d'acheter un billet en ligne ?",
+    content:
+      "Acheter un billet en ligne vous permet de gagner du temps, d'éviter les files d'attente et d'accéder à des offres exclusives.",
+  },
+  {
+    title: "Les enfants doivent-ils avoir un billet ?",
+    content:
+      "Oui, chaque passager, y compris les enfants, doit avoir un billet valide pour voyager. Des réductions peuvent être disponibles pour les enfants.",
+  },
+  {
+    title: "Y a-t-il des réductions pour les groupes ?",
+    content:
+      "Oui, nous proposons des réductions pour les groupes de 10 personnes ou plus. Contactez-nous pour obtenir une offre personnalisée.",
   },
 ];
 
@@ -86,7 +121,7 @@ const Page = () => {
 
       {/* Section Accordéons */}
       {isClient && (
-        <div className="px-10 md:px-20 bg-slate-100  py-16 rounded  ">
+        <div className="px-10 md:px-20 bg-slate-50  py-16 rounded  ">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
             Question fréquentes
           </h2>
