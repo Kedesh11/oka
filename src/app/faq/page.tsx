@@ -1,9 +1,14 @@
-import React from 'react'
+import React from "react";
+import Stape from "@/components/stape-form/stape";
+import NavBar from "@/components/navBar";
 
 const page = () => {
   return (
-    <div>page</div>
-  )
-}
+    <div>
+      <NavBar />
+      <Stape />
+    </div>
+  );
+};
 
-export default page
+export default page;
