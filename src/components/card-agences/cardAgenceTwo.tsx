@@ -14,7 +14,7 @@ import { TicketCheck, MapPinCheck, MapPinned } from "lucide-react";
 import { GiTakeMyMoney } from "react-icons/gi";
 import { Clock3 } from "lucide-react";
 
-export default function cardAgence() {
+export default function cardAgenceTwo() {
   return (
     <div>
       <section>
@@ -23,17 +23,16 @@ export default function cardAgence() {
             <Card>
               <CardHeader>
                 <Image
-                  src="/images/chauf-indé.jpeg"
+                  src="/images/car-for.jpeg"
                   alt="Oka Logo"
                   width={400}
-                  height={80}
+                  height={75}
                   className="cursor-pointer rounded-md"
                 />
                 <CardTitle className="text-green-500 text-lg font-bold">
-                  <p className="text-black font-light">Chris BOUSSOUGOU</p>
-                  <span>Chauffeur Indépendant</span>
+                  Le Transporteur
                 </CardTitle>
-                <CardDescription></CardDescription>
+                <CardDescription>Agence de voyage public </CardDescription>
               </CardHeader>
               <CardContent>
                 <div>

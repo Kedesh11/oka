@@ -387,7 +387,7 @@ const StepForm = () => {
                     className={`p-4 rounded-md border-2 ${
                       paymentMethod === "Airtel Money"
                         ? "border-red-500 bg-red-500"
-                        : "border-gray-300 bg-white"
+                        : "border-red-500 bg-red-500"
                     }`}
                   >
                     <Image
@@ -409,8 +409,8 @@ const StepForm = () => {
                     <Image
                       src="/images/logo-money/moov.png"
                       alt="Moov Logo"
-                      width={45}
-                      height={45}
+                      width={70}
+                      height={70}
                       className="cursor-pointer"
                     />
                   </button>
