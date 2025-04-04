@@ -329,7 +329,7 @@ const StepForm = () => {
                       ? "Voyageur principal"
                       : `Voyageur ${index + 1}`}
                   </h3>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols gap-2">
                     <p>
                       <span className="font-semibold">Nom:</span> {voyageur.nom}
                     </p>
