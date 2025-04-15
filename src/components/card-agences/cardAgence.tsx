@@ -3,7 +3,6 @@ import React from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -14,88 +13,98 @@ import { TicketCheck, MapPinCheck, MapPinned } from "lucide-react";
 import { GiTakeMyMoney } from "react-icons/gi";
 import { Clock3 } from "lucide-react";
 
-export default function cardAgence() {
+interface AgenceProps {
+  img: string;
+  nomAgence: string;
+  typeAgence: string;
+  tarifAdulte: string;
+  tarifEnfant: string;
+  fraisService: string;
+  convocation: string;
+  depart: string;
+  arrivee: string;
+}
+
+export default function CardAgence({
+  img,
+  nomAgence,
+  typeAgence,
+  tarifAdulte,
+  tarifEnfant,
+  fraisService,
+  convocation,
+  depart,
+  arrivee,
+}: AgenceProps) {
   return (
-    <div>
-      <section>
-        <div>
-          <div className="w-96">
-            <Card>
-              <CardHeader>
-                <Image
-                  src="/images/chauf-indé.jpeg"
-                  alt="Oka Logo"
-                  width={400}
-                  height={80}
-                  className="cursor-pointer rounded-md"
-                />
-                <CardTitle className="text-green-500 text-lg font-bold">
-                  <p className="text-black font-light">Chris BOUSSOUGOU</p>
-                  <span>Chauffeur Indépendant</span>
-                </CardTitle>
-                <CardDescription></CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div>
-                  <div className="flex gap-2">
-                    <div className="flex gap-2">
-                      <TicketCheck />
-                      <h4>Tarifs par billets :</h4>
-                    </div>
-                    <div>
-                      <p>Adulte : 12000 Fr</p>
-                      <p>Enfant : 12000 Fr</p>
-                    </div>
-                  </div>
-                  {/* Frais de service */}
-                  <div className="">
-                    <div className="flex gap-2 py-2">
-                      <GiTakeMyMoney size={20} />
-                      <div className="flex gap-2">
-                        <p>Frais de service :</p>
-                        <p>1500 Fr par billet</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Clock3 size={20} />
-                      <div className="flex gap-2">
-                        <p>Convocation :</p>
-                        <p>
-                          <span>6h 00 mn</span>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 py-2">
-                      <MapPinCheck />
-                      <div className="flex gap-2">
-                        <p>Départ:</p>
-                        <p>
-                          <span></span>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 py">
-                      <MapPinned />
-                      <div className="flex gap-2">
-                        <p>Arrivée:</p>
-                        <p>
-                          <span></span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="bg-green-500 text-white w-full">
-                  Valider
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-          <div></div>
+    <div className="w-full px-4 md:px-0 md:w-[48%]">
+      {/* 💡 Layout responsive : horizontal sur desktop, vertical sur mobile */}
+      <Card className="flex flex-col md:flex-row overflow-hidden shadow-md">
+        {/* 🖼️ Image : au-dessus sur mobile, à gauche sur desktop */}
+        <div className="relative w-full md:w-1/3 h-60 md:h-auto">
+          <Image
+            src={img}
+            alt="Image-agence"
+            fill
+            className="object-cover md:rounded-l-md md:rounded-tr-none rounded-t-md"
+          />
         </div>
-      </section>
+
+        {/* 📝 Texte : à droite ou en dessous selon l’écran */}
+        <div className="w-full md:w-2/3 flex flex-col justify-between">
+          <CardHeader>
+            <CardTitle className="text-black text-lg font-bold">
+              <p className="Nom-agence text-green-500 font-light">
+                {nomAgence}
+              </p>
+              <span className="type-agence">{typeAgence}</span>
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="flex flex-col gap-2 text-sm">
+            <div className="flex gap-2 items-start">
+              <TicketCheck />
+              <div>
+                <h4 className="font-medium">Tarifs par billets :</h4>
+                <div className="statut-voyageur">
+                  <p>Adulte : {tarifAdulte}</p>
+                  <p>Enfant : {tarifEnfant}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 items-center">
+              <GiTakeMyMoney size={20} />
+              <p>
+                Frais de service :{" "}
+                <span className="frais-de-service">{fraisService}</span>
+              </p>
+            </div>
+            <div className="flex gap-2 items-center">
+              <Clock3 size={20} />
+              <p>
+                Convocation : <span className="convocation">{convocation}</span>
+              </p>
+            </div>
+            <div className="flex gap-2 items-center">
+              <MapPinCheck />
+              <p>
+                Départ : <span className="départ">{depart}</span>
+              </p>
+            </div>
+            <div className="flex gap-2 items-center">
+              <MapPinned />
+              <p>
+                Arrivée : <span className="arrivé">{arrivee}</span>
+              </p>
+            </div>
+          </CardContent>
+
+          <CardFooter>
+            <Button className="bg-green-500 text-white w-full">Valider</Button>
+          </CardFooter>
+        </div>
+      </Card>
     </div>
   );
 }

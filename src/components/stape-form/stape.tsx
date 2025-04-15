@@ -101,7 +101,7 @@ const StepForm = () => {
     const ticketContent = `
       Billet de voyage
       ================
-      
+
       Voyageurs:
       ${voyageurs
         .map(
@@ -115,7 +115,7 @@ const StepForm = () => {
       `
         )
         .join("\n")}
-      
+
       Paiement:
       - Méthode: ${paymentMethod}
       - Numéro: ${paymentNumber}
@@ -132,10 +132,10 @@ const StepForm = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen p-4">
-      <div className="w-full max-w-2xl p-6 bg-[#F1F1F1] text-black rounded-lg shadow-xl">
+    <div className="flex justify-center items-center h-screen  ">
+      <div className="w-full max-w-2xl p-6 bg-[#F1F1F1] text-black rounded-lg shadow-xl ">
         {/* Barre de progression centrée */}
-        <div className="flex justify-center mb-6">
+        <div className="">
           <div className="flex items-center">
             {[1, 2, 3].map((num, index) => (
               <div key={num} className="flex items-center">
@@ -155,12 +155,36 @@ const StepForm = () => {
               </div>
             ))}
           </div>
+          {/*  */}
+          <div className="Prix-du-billet text-right ">
+            {(() => {
+              const billetUnit = 12000;
+              const fraisService = 1500;
+              const nbVoyageurs = voyageurs.length;
+              const totalBillet = billetUnit * nbVoyageurs;
+              const total = totalBillet + fraisService;
+
+              return (
+                <>
+                  <p>
+                    Prix du billet: <strong>{totalBillet} Fr</strong>
+                  </p>
+                  <p>
+                    Frais de service: <strong>{fraisService} Fr</strong>
+                  </p>
+                  <p>
+                    Prix total: <span className="font-bold">{total} Fr</span>
+                  </p>
+                </>
+              );
+            })()}
+          </div>
         </div>
 
         {/* Étape 1 */}
         {step === 1 && (
           <div>
-            <h2 className="text-green-400 mb-4">Étape 1</h2>
+            <h2 className="text-green-400 py-2">Étape 1</h2>
 
             {voyageurs.map((voyageur, index) => (
               <div
@@ -317,7 +341,7 @@ const StepForm = () => {
         {step === 2 && (
           <div>
             <h2 className="text-green-400 mb-4">Étape 2</h2>
-            <p className="text-red-400 text-center mb-6">
+            <p className="text-red-400 py-2">
               Vérifiez que vos informations sont correctes
             </p>
 
@@ -410,7 +434,7 @@ const StepForm = () => {
                       src="/images/logo-money/moov.png"
                       alt="Moov Logo"
                       width={70}
-                      height={70}
+                      height={120}
                       className="cursor-pointer"
                     />
                   </button>
