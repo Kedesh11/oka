@@ -1,9 +1,12 @@
 import React from 'react'
+import AgenciesManager from '@/components/dashboard/agencies/AgenciesManager'
 
-const page = () => {
+const AdminDashboard = () => {
   return (
-    <div>page</div>
+    <div className="min-h-screen bg-gray-50">
+      <AgenciesManager />
+    </div>
   )
 }
 
-export default page
+export default AdminDashboard

@@ -5,14 +5,6 @@ import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command"
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -48,33 +40,33 @@ export function Combobox({ options, open, onOpenChange, onSelect, selectedValue,
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[160px] p-0">
-        <Command>
-          <CommandInput placeholder="Search option..." />
-          <CommandList>
-            <CommandEmpty>No option found.</CommandEmpty>
-            <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.value}
-                  onSelect={(currentValue) => {
-                    onSelect(currentValue === selectedValue ? "" : currentValue)
-                    onOpenChange(false)
-                  }}
-                >
-                  {option.label}
-                  <Check
-                    className={cn(
-                      "ml-auto",
-                      selectedValue === option.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+      <PopoverContent className="w-[160px] p-1">
+        <div role="listbox" className="max-h-60 overflow-auto">
+          {options.map((option) => {
+            const isSelected = selectedValue === option.value
+            return (
+              <button
+                key={option.value}
+                role="option"
+                aria-selected={isSelected}
+                onClick={() => {
+                  onSelect(isSelected ? "" : option.value)
+                  onOpenChange(false)
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground",
+                  isSelected && "bg-accent text-accent-foreground"
+                )}
+              >
+                <span className="truncate">{option.label}</span>
+                <Check className={cn("ml-auto", isSelected ? "opacity-100" : "opacity-0")} />
+              </button>
+            )
+          })}
+          {options.length === 0 && (
+            <div className="py-2 text-center text-sm text-muted-foreground">Aucun élément</div>
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   )

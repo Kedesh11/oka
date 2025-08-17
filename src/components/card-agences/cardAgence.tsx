@@ -23,6 +23,7 @@ interface AgenceProps {
   convocation: string;
   depart: string;
   arrivee: string;
+  onValidate?: () => void;
 }
 
 export default function CardAgence({
@@ -35,6 +36,7 @@ export default function CardAgence({
   convocation,
   depart,
   arrivee,
+  onValidate,
 }: AgenceProps) {
   return (
     <div className="w-full px-4 md:px-0 md:w-[48%]">
@@ -67,8 +69,8 @@ export default function CardAgence({
               <div>
                 <h4 className="font-medium">Tarifs par billets :</h4>
                 <div className="statut-voyageur">
-                  <p>Adulte : {tarifAdulte}</p>
-                  <p>Enfant : {tarifEnfant}</p>
+                  <p>Adulte : {tarifAdulte} F CFA</p>
+                  <p>Enfant : {tarifEnfant} F CFA</p>
                 </div>
               </div>
             </div>
@@ -77,7 +79,7 @@ export default function CardAgence({
               <GiTakeMyMoney size={20} />
               <p>
                 Frais de service :{" "}
-                <span className="frais-de-service">{fraisService}</span>
+                <span className="frais-de-service">{fraisService} F CFA</span>
               </p>
             </div>
             <div className="flex gap-2 items-center">
@@ -101,7 +103,7 @@ export default function CardAgence({
           </CardContent>
 
           <CardFooter>
-            <Button className="bg-green-500 text-white w-full">Valider</Button>
+            <Button className="bg-green-500 text-white w-full" onClick={onValidate}>Valider</Button>
           </CardFooter>
         </div>
       </Card>

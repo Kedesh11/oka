@@ -7,8 +7,9 @@ function Footer() {
     <div className="flex justify-center items-center w-full bg-[#01be65] h-12 px-3 py-3 xl:gap-x-6 gap-x-2 text-white">
       <div>
         <h3 className="xl:text-lg text-sm">
-          Copyright by IFUMB 2025 Tous droits réservés
+          Copyright by IFUMB {new Date().getFullYear()} Tous droits réservés
         </h3>
+
       </div>
       <Separator orientation="vertical" className="w-0.5" />
       <div className="text-2xl">

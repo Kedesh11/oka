@@ -8,13 +8,154 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// --- Seating metadata enums ---
+
+enum SeatType {
+  NORMAL
+  HANDICAP
+  VIP
+  DRIVER
+}
+
+enum SeatSection {
+  FRONT
+  MIDDLE
+  BACK
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-model agence {
-  id Int      @id @default(autoincrement())
-  name String
+// Removed duplicate legacy model `agence` to avoid confusion with `Agence`
+
+// Nouveaux modèles
+
+enum StatutTrajet {
+  actif
+  inactif
+}
+
+enum StatutReservation {
+  en_attente
+  confirmee
+  annulee
+}
+
+model Agence {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  email     String?  @unique
+  phone     String?
+  address   String?
+  zone      String?  // Zone géographique (région, ville, etc.)
+  createdAt DateTime @default(now())
+  trajets   Trajet[]
+  buses     Bus[]
+}
+
+model Trajet {
+  id           Int           @id @default(autoincrement())
+  depart       String
+  arrivee      String
+  heure        String // Format HH:MM (simple)
+  prixAdulte   Int
+  prixEnfant   Int
+  statut       StatutTrajet  @default(actif)
+  agenceId     Int
+  agence       Agence        @relation(fields: [agenceId], references: [id])
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  voyages      Voyage[]
+}
+
+model Reservation {
+  id          Int                    @id @default(autoincrement())
+  trajetId    Int
+  trajet      Trajet                 @relation(fields: [trajetId], references: [id])
+  voyageId    Int?
+  voyage      Voyage?                @relation(fields: [voyageId], references: [id])
+  client      String
+  telephone   String
+  nbVoyageurs Int
+  statut         StatutReservation @default(en_attente)
+  childrenCount  Int               @default(0)
+  baggage        Int               @default(0)
+  adultIdUrl     String?
+  otherDocumentUrl String?
+  createdAt      DateTime          @default(now())
+  passengers  ReservationPassenger[]
+}
+
+// --- Fleet & Seating Models ---
+
+model Bus {
+  id          Int       @id @default(autoincrement())
+  agenceId    Int
+  agence      Agence    @relation(fields: [agenceId], references: [id])
+  name        String // e.g., Bus name or plate number
+  type        String // e.g., "Coaster", "Hiace", etc.
+  seatCount   Int
+  seatsPerRow Int // e.g., 4 for 2+2, 5 for 2+3
+  layout      String? // free text or JSON for layout pattern
+  createdAt   DateTime  @default(now())
+  seats       BusSeat[]
+  voyages     Voyage[]
+}
+
+model BusSeat {
+  id          Int              @id @default(autoincrement())
+  busId       Int
+  bus         Bus              @relation(fields: [busId], references: [id])
+  label       String // e.g., "1A", "1B", or numeric
+  row         Int
+  col         Int
+  type        SeatType         @default(NORMAL)
+  isWindow    Boolean          @default(false)
+  isAisle     Boolean          @default(false)
+  section     SeatSection?
+  assignments SeatAssignment[]
+}
+
+// Voyage is a concrete departure (date + trajet + assigned bus)
+model Voyage {
+  id           Int              @id @default(autoincrement())
+  trajetId     Int
+  trajet       Trajet           @relation(fields: [trajetId], references: [id])
+  date         DateTime // Calendar date of the voyage
+  busId        Int
+  bus          Bus              @relation(fields: [busId], references: [id])
+  createdAt    DateTime         @default(now())
+  assignments  SeatAssignment[]
+  reservations Reservation[]
+}
+
+// Expand a reservation into per-passenger rows for seating
+model ReservationPassenger {
+  id              Int              @id @default(autoincrement())
+  reservationId   Int
+  reservation     Reservation      @relation(fields: [reservationId], references: [id])
+  name            String?
+  age             Int?
+  prefWindow      Boolean?
+  prefAisle       Boolean?
+  prefSection     SeatSection?
+  seatAssignments SeatAssignment[]
+}
+
+model SeatAssignment {
+  id          Int                  @id @default(autoincrement())
+  voyageId    Int
+  voyage      Voyage               @relation(fields: [voyageId], references: [id])
+  busSeatId   Int
+  busSeat     BusSeat              @relation(fields: [busSeatId], references: [id])
+  passengerId Int
+  passenger   ReservationPassenger @relation(fields: [passengerId], references: [id])
+
+  // Ensure a seat is assigned once per voyage
+  @@unique([voyageId, busSeatId])
+  // Ensure a passenger is assigned at most once per voyage
+  @@unique([voyageId, passengerId])
 }
