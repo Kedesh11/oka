@@ -2,8 +2,8 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Bell, Search, User, Settings, LogOut, ChevronDown } from "lucide-react";
-import { Dropdown, Badge, Avatar, Button, Input, Space, Typography } from "antd";
-import { UserOutlined, SettingOutlined, LogoutOutlined } from "@ant-design/icons";
+import { Dropdown, Badge, Avatar, Button, Input, Space, Typography, Layout } from "antd";
+import { UserOutlined, SettingOutlined, LogoutOutlined, SearchOutlined, BellOutlined, DownOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
 
@@ -32,7 +32,7 @@ export function Topbar() {
       label: 'Paramètres',
     },
     {
-      type: 'divider',
+      type: 'divider' as const,
     },
     {
       key: 'logout',
@@ -98,77 +98,73 @@ export function Topbar() {
   };
 
   return (
-    <header className="flex-shrink-0 z-10 bg-[#01be65] text-white shadow">
-      <div className="mx-auto flex h-14 items-center justify-between px-4 md:px-6">
-        <div className="flex items-center gap-3">
-          <Image src="/images/okalogo.png" alt="Oka Logo" width={28} height={28} />
-          <div className="hidden sm:block font-semibold">Oka Dashboard</div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          {/* Barre de recherche */}
-          <div className="hidden md:flex items-center gap-2 rounded-md bg-white/10 px-2">
-            <Search className="h-4 w-4 opacity-90" />
-            <Input
-              placeholder="Rechercher..."
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className="h-8 w-44 bg-transparent border-none text-sm placeholder:text-white/80 text-white"
-              style={{ color: 'white' }}
-            />
-          </div>
-
-          {/* Notifications */}
-          <Dropdown
-            menu={{ items: notificationItems }}
-            placement="bottomRight"
-            trigger={['click']}
-          >
-            <button className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-white/10 relative">
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <Badge 
-                  count={unreadCount} 
-                  size="small" 
-                  className="absolute -top-1 -right-1"
-                  style={{ 
-                    backgroundColor: '#ff4d4f',
-                    color: 'white',
-                    fontSize: '10px',
-                    lineHeight: '12px',
-                    height: '16px',
-                    minWidth: '16px',
-                    padding: '0 4px'
-                  }}
-                />
-              )}
-            </button>
-          </Dropdown>
-
-          {/* Menu utilisateur */}
-          <Dropdown
-            menu={{ 
-              items: userMenuItems,
-              onClick: handleUserMenuClick
-            }}
-            placement="bottomRight"
-            trigger={['click']}
-          >
-            <button className="inline-flex h-9 items-center justify-center rounded-md hover:bg-white/10 px-2 gap-2">
-              <Avatar 
-                size="small" 
-                icon={<User className="h-4 w-4" />}
-                className="bg-white/20"
-              />
-              <div className="hidden sm:block text-left">
-                <div className="text-sm font-medium">Admin</div>
-                <div className="text-xs opacity-80">Administrateur</div>
-              </div>
-              <ChevronDown className="h-4 w-4 opacity-70" />
-            </button>
-          </Dropdown>
+    <Layout.Header className="bg-[#01be65] text-white px-6 h-14 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <Image src="/images/okalogo.png" alt="Oka Logo" width={28} height={28} />
+        <div className="hidden sm:block font-semibold">
+          Oka Dashboard
         </div>
       </div>
-    </header>
+      
+      <div className="flex items-center gap-2">
+        {/* Barre de recherche */}
+        <div className="hidden md:flex items-center gap-2 rounded-md bg-white/10 px-2">
+          <SearchOutlined className="text-white/90" />
+          <Input
+            placeholder="Rechercher..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            className="h-8 w-44 bg-transparent border-none text-sm text-white placeholder:text-white/80"
+          />
+        </div>
+
+        {/* Notifications */}
+        <Dropdown
+          menu={{ items: notificationItems }}
+          placement="bottomRight"
+          trigger={['click']}
+        >
+          <Button 
+            type="text" 
+            icon={<BellOutlined />}
+            className="h-9 w-9 flex items-center justify-center text-white hover:bg-white/10"
+          >
+            {unreadCount > 0 && (
+              <Badge 
+                count={unreadCount} 
+                size="small" 
+                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs leading-3 h-4 min-w-4 px-1"
+              />
+            )}
+          </Button>
+        </Dropdown>
+
+        {/* Menu utilisateur */}
+        <Dropdown
+          menu={{ 
+            items: userMenuItems,
+            onClick: handleUserMenuClick
+          }}
+          placement="bottomRight"
+          trigger={['click']}
+        >
+          <Button 
+            type="text"
+            className="h-9 flex items-center gap-2 px-2 text-white hover:bg-white/10"
+          >
+            <Avatar 
+              size="small" 
+              icon={<UserOutlined />}
+              className="bg-white/20"
+            />
+            <div className="hidden sm:block text-left">
+              <div className="text-sm font-medium">Admin</div>
+              <div className="text-xs opacity-80">Administrateur</div>
+            </div>
+            <DownOutlined className="opacity-70" />
+          </Button>
+        </Dropdown>
+      </div>
+    </Layout.Header>
   );
 }

@@ -14,6 +14,7 @@ import {
   Card
 } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useApiUrl } from '@/hooks/use-api-url';
 
 const { Title } = Typography;
 
@@ -42,12 +43,13 @@ export default function AgenciesManager() {
   const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
   const [form] = Form.useForm<AgencyFormData>();
   const [messageApi, contextHolder] = message.useMessage();
+  const { getApiUrl } = useApiUrl();
 
   // Fetch agencies
   const fetchAgencies = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/agencies');
+      const response = await fetch(getApiUrl('/api/admin/agencies'));
       const data = await response.json();
       if (!response.ok) {
         const errorDetails = data.details || 'Aucun détail disponible.';
@@ -71,8 +73,8 @@ export default function AgenciesManager() {
   const handleSubmit = async (values: AgencyFormData) => {
     try {
       const url = editingAgency 
-        ? `/api/admin/agencies/${editingAgency.id}`
-        : '/api/admin/agencies';
+        ? getApiUrl(`/api/admin/agencies/${editingAgency.id}`)
+        : getApiUrl('/api/admin/agencies');
       
       const method = editingAgency ? 'PUT' : 'POST';
       
@@ -110,7 +112,7 @@ export default function AgenciesManager() {
   // Handle delete
   const handleDelete = async (id: number) => {
     try {
-      const response = await fetch(`/api/admin/agencies/${id}`, {
+      const response = await fetch(getApiUrl(`/api/admin/agencies/${id}`), {
         method: 'DELETE',
       });
 
@@ -236,20 +238,20 @@ export default function AgenciesManager() {
           </Button>
         </div>
 
-        <Table
-          columns={columns}
-          dataSource={agencies}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} sur ${total} agences`,
-          }}
-        />
-      </Card>
+                 <Table
+           columns={columns}
+           dataSource={agencies}
+           rowKey="id"
+           loading={loading}
+           pagination={{
+             pageSize: 4,
+             showSizeChanger: false,
+             showQuickJumper: true,
+             showTotal: (total, range) =>
+               `${range[0]}-${range[1]} sur ${total} agences`,
+           }}
+                  />
+       </Card>
 
       <Modal
         title={editingAgency ? 'Modifier l\'agence' : 'Ajouter une agence'}

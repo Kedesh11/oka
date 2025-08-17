@@ -42,7 +42,7 @@ const StatCard: React.FC<StatCardProps> = ({
 }) => {
   return (
     <Card className="h-full">
-      <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
         <div className="flex-1">
           <Text type="secondary" className="text-sm">{title}</Text>
           <div className="flex items-baseline gap-2 mt-1">
@@ -66,13 +66,13 @@ const StatCard: React.FC<StatCardProps> = ({
           {description && (
             <Text type="secondary" className="text-xs mt-1 block">{description}</Text>
           )}
-        </div>
+          </div>
         {icon && (
           <div className="text-2xl opacity-20" style={{ color }}>
             {icon}
-          </div>
+        </div>
         )}
-      </div>
+    </div>
     </Card>
   );
 };

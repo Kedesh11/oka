@@ -245,7 +245,7 @@ export const AiSuggestions: React.FC = () => {
                 avatar={
                   <Avatar 
                     icon={getTypeIcon(suggestion.type)}
-                    style={{ backgroundColor: 'transparent' }}
+                    className="bg-transparent"
                   />
                 }
                 title={
@@ -297,10 +297,10 @@ export const AiSuggestions: React.FC = () => {
               <List.Item>
                 <List.Item.Meta
                   avatar={
-                    <Avatar 
-                      icon={<CheckCircleOutlined className="text-green-600" />}
-                      style={{ backgroundColor: 'transparent' }}
-                    />
+                                      <Avatar 
+                    icon={<CheckCircleOutlined className="text-green-600" />}
+                    className="bg-transparent"
+                  />
                   }
                   title={
                     <div className="flex items-center gap-2">

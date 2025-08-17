@@ -1,19 +1,26 @@
 "use client";
 
-import React from "react";
-import { App as AntdApp, ConfigProvider, theme } from "antd";
+import { ConfigProvider } from "antd";
+import { StyleProvider } from "@ant-design/cssinjs";
+import { ReactNode } from "react";
 
-export default function AntdProvider({ children }: { children: React.ReactNode }) {
+interface AntdProviderProps {
+  children: ReactNode;
+}
+
+export default function AntdProvider({ children }: AntdProviderProps) {
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: theme.defaultAlgorithm,
-        token: {
-          colorPrimary: "#01be65",
-        },
-      }}
-    >
-      <AntdApp>{children}</AntdApp>
-    </ConfigProvider>
+    <StyleProvider hashPriority="high">
+      <ConfigProvider
+        theme={{
+          token: {
+            colorPrimary: '#01be65',
+            borderRadius: 6,
+          },
+        }}
+      >
+        {children}
+      </ConfigProvider>
+    </StyleProvider>
   );
 }

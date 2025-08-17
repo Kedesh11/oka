@@ -3,65 +3,89 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { LayoutGrid, Users, Building2, LineChart, Settings, Shield, LogOut } from "lucide-react";
+import { Layout, Menu, Typography } from "antd";
+import { 
+  DashboardOutlined, 
+  UserOutlined, 
+  BuildOutlined, 
+  BarChartOutlined, 
+  SettingOutlined, 
+  SafetyOutlined, 
+  LogoutOutlined 
+} from "@ant-design/icons";
 
 const nav = [
-  { href: "/dashboard/admin?tab=overview", label: "Overview", icon: LayoutGrid },
-  { href: "/dashboard/admin?tab=users", label: "Utilisateurs", icon: Users },
-  { href: "/dashboard/admin?tab=agencies", label: "Agences", icon: Building2 },
-  { href: "/dashboard/admin?tab=reports", label: "Rapports", icon: LineChart },
-  { href: "/dashboard/admin?tab=security", label: "Sécurité", icon: Shield },
-  { href: "/dashboard/admin?tab=settings", label: "Paramètres", icon: Settings },
+  { href: "/dashboard/admin?tab=overview", label: "Overview", icon: DashboardOutlined },
+  { href: "/dashboard/admin?tab=users", label: "Utilisateurs", icon: UserOutlined },
+  { href: "/dashboard/admin?tab=agencies", label: "Agences", icon: BuildOutlined },
+  { href: "/dashboard/admin?tab=reports", label: "Rapports", icon: BarChartOutlined },
+  { href: "/dashboard/admin?tab=security", label: "Sécurité", icon: SafetyOutlined },
+  { href: "/dashboard/admin?tab=settings", label: "Paramètres", icon: SettingOutlined },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  
+  const menuItems = nav.map(({ href, label, icon: Icon }) => {
+    const url = new URL(href, "http://localhost");
+    const hrefPath = url.pathname;
+    const hrefTab = url.searchParams.get("tab");
+    const currentTab = searchParams.get("tab");
+    const active = pathname === hrefPath && (hrefTab ? currentTab === hrefTab : true);
+    
+    return {
+      key: href,
+      icon: <Icon />,
+      label: <Link href={href}>{label}</Link>,
+      style: active ? { 
+        backgroundColor: '#E9FBF3', 
+        color: '#01be65',
+        border: '1px solid #C7F3DE'
+      } : {}
+    };
+  });
+
+  // Ajouter l'élément de déconnexion au menu
+  const allMenuItems = [
+    ...menuItems,
+    {
+      type: 'divider' as const,
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: <Link href="/logout">Se déconnecter</Link>,
+      className: 'text-gray-600',
+    }
+  ];
+
   return (
-    <aside className="flex w-60 md:w-64 lg:w-72 xl:w-72 border-r bg-white h-full">
-      <div className="flex flex-col gap-2 p-4 w-full">
-        <div className="flex items-center gap-3 px-2 py-3">
+    <Layout.Sider 
+      width={240}
+      className="bg-white border-r border-gray-200"
+    >
+      <div className="p-4 h-full flex flex-col">
+        <div className="flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-[#01be65]/5 to-[#01be65]/10 rounded-lg">
           <Image src="/images/okalogo.png" alt="Oka Logo" width={36} height={36} />
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold">OKA</span>
-            <span className="text-[11px] text-muted-foreground">Admin</span>
+            <Typography.Text strong className="text-sm text-[#01be65]">OKA</Typography.Text>
+            <Typography.Text type="secondary" className="text-xs">Admin</Typography.Text>
           </div>
         </div>
-        <nav className="flex-1 space-y-1 pt-2 overflow-y-auto">
-          {nav.map(({ href, label, icon: Icon }) => {
-            const url = new URL(href, "http://localhost");
-            const hrefPath = url.pathname;
-            const hrefTab = url.searchParams.get("tab");
-            const currentTab = searchParams.get("tab");
-            const active = pathname === hrefPath && (hrefTab ? currentTab === hrefTab : true);
-            return (
-              <Link
-                key={`${href}-${label}`}
-                href={href}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-                  active
-                    ? "bg-[#E9FBF3] text-[#01be65] border border-[#C7F3DE]"
-                    : "text-slate-700 hover:bg-slate-50"
-                )}
-              >
-                <Icon className={cn("h-4 w-4", active ? "text-[#01be65]" : "text-slate-500")} />
-                <span className="truncate">{label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="mt-auto">
-          <Link
-            href="/logout"
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
-          >
-            <LogOut className="h-4 w-4 text-slate-500" />
-            <span>Se déconnecter</span>
-          </Link>
-          <div className="text-xs text-muted-foreground px-3 pt-2">© {new Date().getFullYear()} Oka</div>
+        
+        <Menu
+          mode="inline"
+          items={allMenuItems}
+          className="border-none mt-2 flex-1"
+        />
+        
+        <div className="mt-auto pt-4">
+          <Typography.Text type="secondary" className="text-xs px-3">
+            © {new Date().getFullYear()} Oka
+          </Typography.Text>
         </div>
       </div>
-    </aside>
+    </Layout.Sider>
   );
 }

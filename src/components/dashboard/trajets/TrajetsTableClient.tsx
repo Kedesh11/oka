@@ -380,7 +380,7 @@ export default function TrajetsTableClient({ trajets, onCreate, onUpdate, onDele
         rowKey="id"
         dataSource={trajets}
         columns={columns as any}
-        pagination={{ pageSize: 10, showSizeChanger: false }}
+        pagination={{ pageSize: 4, showSizeChanger: false }}
         locale={{ emptyText: "No data" }}
       />
     </div>

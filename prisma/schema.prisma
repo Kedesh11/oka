@@ -43,6 +43,31 @@ enum StatutReservation {
   annulee
 }
 
+enum UserRole {
+  Admin
+  Agence
+  Client
+}
+
+enum UserStatus {
+  active
+  inactive
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  name      String
+  email     String     @unique
+  password  String
+  role      UserRole   @default(Client)
+  status    UserStatus @default(active)
+  phone     String?
+  address   String?
+  lastLogin DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
 model Agence {
   id        Int      @id @default(autoincrement())
   name      String   @unique

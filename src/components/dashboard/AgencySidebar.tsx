@@ -22,10 +22,10 @@ export function AgencySidebar() {
   return (
     <aside className="flex w-60 md:w-64 lg:w-72 xl:w-72 border-r bg-white h-full">
       <div className="flex flex-col gap-2 p-4 w-full">
-        <div className="flex items-center gap-3 px-2 py-3">
+        <div className="flex items-center gap-3 px-2 py-3 bg-gradient-to-r from-[#01be65]/5 to-[#01be65]/10 rounded-lg">
           <Image src="/images/okalogo.png" alt="Oka Logo" width={36} height={36} />
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold">OKA</span>
+            <span className="text-sm font-semibold text-[#01be65]">OKA</span>
             <span className="text-[11px] text-muted-foreground">Agence</span>
           </div>
         </div>

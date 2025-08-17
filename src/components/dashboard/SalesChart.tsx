@@ -99,7 +99,7 @@ export const SalesChart: React.FC = () => {
           <Select
             value={timeRange}
             onChange={setTimeRange}
-            style={{ width: 120 }}
+            className="w-30"
             options={[
               { value: '1m', label: '1 mois' },
               { value: '3m', label: '3 mois' },
@@ -110,7 +110,7 @@ export const SalesChart: React.FC = () => {
           <Select
             value={chartType}
             onChange={setChartType}
-            style={{ width: 120 }}
+            className="w-30"
             options={[
               { value: 'bar', label: 'Barres' },
               { value: 'line', label: 'Ligne' },
@@ -186,10 +186,11 @@ export const SalesChart: React.FC = () => {
             <List.Item>
               <List.Item.Meta
                 avatar={
-                  <Avatar 
-                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                    icon={<Calendar className="h-4 w-4" />}
-                  />
+                                  <Avatar 
+                  className="bg-opacity-100"
+                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  icon={<Calendar className="h-4 w-4" />}
+                />
                 }
                 title={
                   <div className="flex items-center justify-between">
