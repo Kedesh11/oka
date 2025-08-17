@@ -24,9 +24,8 @@ enum SeatSection {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider  = "sqlite"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 // Removed duplicate legacy model `agence` to avoid confusion with `Agence`
