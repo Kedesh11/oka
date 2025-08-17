@@ -18,8 +18,8 @@ export function AdminSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   return (
-    <aside className="flex w-60 md:w-64 lg:w-72 xl:w-72 border-r bg-white">
-      <div className="flex min-h-full flex-col gap-2 p-4">
+    <aside className="flex w-60 md:w-64 lg:w-72 xl:w-72 border-r bg-white h-full">
+      <div className="flex flex-col gap-2 p-4 w-full">
         <div className="flex items-center gap-3 px-2 py-3">
           <Image src="/images/okalogo.png" alt="Oka Logo" width={36} height={36} />
           <div className="flex flex-col leading-tight">
@@ -27,7 +27,7 @@ export function AdminSidebar() {
             <span className="text-[11px] text-muted-foreground">Admin</span>
           </div>
         </div>
-        <nav className="flex-1 space-y-1 pt-2">
+        <nav className="flex-1 space-y-1 pt-2 overflow-y-auto">
           {nav.map(({ href, label, icon: Icon }) => {
             const url = new URL(href, "http://localhost");
             const hrefPath = url.pathname;
