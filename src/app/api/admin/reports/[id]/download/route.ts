@@ -1,0 +1,120 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = parseInt(params.id);
+    
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'ID de rapport invalide' },
+        { status: 400 }
+      );
+    }
+
+    const report = await prisma.report.findUnique({
+      where: { id },
+    });
+
+    if (!report) {
+      return NextResponse.json(
+        { error: 'Rapport non trouvé' },
+        { status: 404 }
+      );
+    }
+
+    if (report.status !== 'Généré') {
+      return NextResponse.json(
+        { error: 'Le rapport n\'est pas encore généré' },
+        { status: 400 }
+      );
+    }
+
+    // Simuler la génération d'un PDF
+    // Dans un vrai projet, on utiliserait une bibliothèque comme puppeteer ou jsPDF
+    const pdfContent = generatePDFContent(report);
+
+    // Retourner le PDF comme blob
+    return new NextResponse(pdfContent, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="rapport-${report.type.toLowerCase()}-${new Date(report.createdAt).toISOString().split('T')[0]}.pdf"`,
+      },
+    });
+  } catch (error) {
+    console.error('Erreur lors du téléchargement du rapport:', error);
+    return NextResponse.json(
+      { error: 'Erreur lors du téléchargement du rapport' },
+      { status: 500 }
+    );
+  }
+}
+
+function generatePDFContent(report: any): Buffer {
+  // Simuler la génération d'un PDF
+  // Dans un vrai projet, on utiliserait une bibliothèque comme puppeteer ou jsPDF
+  const content = `
+%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+
+4 0 obj
+<<
+/Length 100
+>>
+stream
+BT
+/F1 12 Tf
+72 720 Td
+(Rapport ${report.type}) Tj
+0 -20 Td
+(Généré le: ${new Date(report.createdAt).toLocaleDateString('fr-FR')}) Tj
+ET
+endstream
+endobj
+
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000204 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+350
+%%EOF
+  `;
+
+  return Buffer.from(content, 'utf8');
+}

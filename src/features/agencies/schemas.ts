@@ -10,10 +10,10 @@ export type AgenciesByRouteQuery = z.infer<typeof agenciesByRouteQuerySchema>;
 export const AgencySchema = z.object({
   id: z.number().int(),
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  email: z.string().email("L'email n'est pas valide").or(z.literal("")).transform(val => val === "" ? null : val),
-  phone: z.string().min(5, "Le téléphone doit contenir au moins 5 caractères").or(z.literal("")).transform(val => val === "" ? null : val),
-  address: z.string().or(z.literal("")).transform(val => val === "" ? null : val),
-  zone: z.string().or(z.literal("")).transform(val => val === "" ? null : val),
+  email: z.string().email("L'email n'est pas valide").optional().or(z.literal("")).transform(val => val === "" ? null : val),
+  phone: z.string().optional().or(z.literal("")).transform(val => val === "" ? null : val),
+  address: z.string().optional().or(z.literal("")).transform(val => val === "" ? null : val),
+  zone: z.string().optional().or(z.literal("")).transform(val => val === "" ? null : val),
 });
 
 export const CreateAgencySchema = AgencySchema.omit({ id: true });

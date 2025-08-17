@@ -23,7 +23,7 @@ export const agencyService = {
     return agencyRepo.update(id, data);
   },
 
-  async delete(id: number) {
+  async delete(id: number, cascade: boolean = true) {
     const agency = await prisma.agence.findUnique({
       where: { id },
       include: { _count: { select: { trajets: true, buses: true } } },
@@ -33,11 +33,16 @@ export const agencyService = {
       throw new Error("AGENCY_NOT_FOUND");
     }
 
-    if (agency._count.trajets > 0 || agency._count.buses > 0) {
-      throw new Error("AGENCY_HAS_RELATIONS");
+    if (cascade) {
+      // Utiliser la suppression en cascade
+      return agencyRepo.deleteWithCascade(id);
+    } else {
+      // Vérifier qu'il n'y a pas de relations avant de supprimer
+      if (agency._count.trajets > 0 || agency._count.buses > 0) {
+        throw new Error("AGENCY_HAS_RELATIONS");
+      }
+      return agencyRepo.delete(id);
     }
-
-    return agencyRepo.delete(id);
   },
   async findAgenciesByRoute(params: { depart: string; arrivee: string }) {
     const agencies = await agencyRepo.findByRoute(params);

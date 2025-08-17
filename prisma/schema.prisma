@@ -66,6 +66,8 @@ model User {
   lastLogin DateTime?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  agenceId  Int?       // Relation avec l'agence (optionnel pour les clients)
+  agence    Agence?    @relation(fields: [agenceId], references: [id])
 }
 
 model Agence {
@@ -78,6 +80,7 @@ model Agence {
   createdAt DateTime @default(now())
   trajets   Trajet[]
   buses     Bus[]
+  users     User[]   // Relation avec les utilisateurs
 }
 
 model Trajet {
@@ -182,4 +185,32 @@ model SeatAssignment {
   @@unique([voyageId, busSeatId])
   // Ensure a passenger is assigned at most once per voyage
   @@unique([voyageId, passengerId])
+}
+
+// --- Report Model ---
+
+enum ReportType {
+  Ventes
+  Trajets
+  Utilisateurs
+  Réservations
+  Satisfaction
+}
+
+enum ReportStatus {
+  En_cours
+  Généré
+  Échec
+}
+
+model Report {
+  id        Int          @id @default(autoincrement())
+  title     String
+  type      ReportType
+  status    ReportStatus @default(En_cours)
+  content   String?      // JSON content of the report
+  summary   String?      // JSON summary data
+  url       String?      // URL to download the report
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 }

@@ -16,6 +16,13 @@ export async function GET() {
         lastLogin: true,
         phone: true,
         address: true,
+        agenceId: true,
+        agence: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -46,6 +53,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Vérifier que l'agenceId est fourni pour les utilisateurs de type 'Agence'
+    if (role === 'Agence' && !body.agenceId) {
+      return NextResponse.json(
+        { error: 'Un utilisateur de type Agence doit être associé à une agence' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier que l'agence existe si agenceId est fourni
+    if (body.agenceId) {
+      const agency = await prisma.agence.findUnique({
+        where: { id: body.agenceId },
+      });
+
+      if (!agency) {
+        return NextResponse.json(
+          { error: 'L\'agence sélectionnée n\'existe pas' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Vérifier si l'email existe déjà
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -64,11 +93,12 @@ export async function POST(request: NextRequest) {
         name,
         email,
         role,
-        status,
+        status: status === 'ACTIVE' ? 'active' : 'inactive',
         phone: phone || null,
         address: address || null,
         password, // Note: Dans un vrai projet, le mot de passe devrait être hashé
         lastLogin: new Date(),
+        agenceId: body.agenceId || null, // Ajouter la relation avec l'agence
       },
       select: {
         id: true,
@@ -79,6 +109,13 @@ export async function POST(request: NextRequest) {
         lastLogin: true,
         phone: true,
         address: true,
+        agenceId: true,
+        agence: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 

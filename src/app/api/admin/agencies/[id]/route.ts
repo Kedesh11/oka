@@ -3,12 +3,13 @@ import { agencyService } from "@/server/services/agencyService";
 import { UpdateAgencySchema } from "@/features/agencies/schemas";
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     if (isNaN(id)) {
       return NextResponse.json({ error: "Invalid agency ID" }, { status: 400 });
     }
@@ -27,7 +28,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     if (isNaN(id)) {
       return NextResponse.json({ error: "Invalid agency ID" }, { status: 400 });
     }
@@ -49,12 +51,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     if (isNaN(id)) {
       return NextResponse.json({ error: "Invalid agency ID" }, { status: 400 });
     }
 
-    await agencyService.delete(id);
+    const { searchParams } = new URL(request.url);
+    const cascade = searchParams.get('cascade') === 'true';
+
+    await agencyService.delete(id, cascade);
     return NextResponse.json({ message: "Agency deleted successfully" });
   } catch (error) {
     console.error(`[DELETE /api/admin/agencies/${params.id}]`, error);
@@ -63,7 +69,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         return NextResponse.json({ error: "Agency not found" }, { status: 404 });
       }
       if (error.message === "AGENCY_HAS_RELATIONS") {
-        return NextResponse.json({ error: "Cannot delete agency with associated data" }, { status: 409 });
+        return NextResponse.json({ error: "Cannot delete agency with associated data. Use cascade=true to delete all related data." }, { status: 409 });
       }
     }
     return NextResponse.json({ error: "Failed to delete agency" }, { status: 500 });

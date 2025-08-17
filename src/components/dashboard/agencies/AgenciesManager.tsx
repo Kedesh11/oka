@@ -13,8 +13,9 @@ import {
   Typography,
   Card
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useApiUrl } from '@/hooks/use-api-url';
+import DetailsModal from '@/components/dashboard/DetailsModal';
 
 const { Title } = Typography;
 
@@ -26,6 +27,10 @@ interface Agency {
   address?: string;
   zone?: string;
   createdAt: string;
+  _count?: {
+    trajets: number;
+    buses: number;
+  };
 }
 
 interface AgencyFormData {
@@ -40,7 +45,9 @@ export default function AgenciesManager() {
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
+  const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
   const [form] = Form.useForm<AgencyFormData>();
   const [messageApi, contextHolder] = message.useMessage();
   const { getApiUrl } = useApiUrl();
@@ -110,17 +117,21 @@ export default function AgenciesManager() {
   };
 
   // Handle delete
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number, withCascade: boolean = true) => {
     try {
-      const response = await fetch(getApiUrl(`/api/admin/agencies/${id}`), {
+      const response = await fetch(getApiUrl(`/api/admin/agencies/${id}${withCascade ? '?cascade=true' : ''}`), {
         method: 'DELETE',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete agency');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete agency');
       }
 
-      messageApi.success('Agence supprimée avec succès');
+      const message = withCascade 
+        ? 'Agence et toutes ses données associées supprimées avec succès'
+        : 'Agence supprimée avec succès';
+      messageApi.success(message);
       fetchAgencies();
     } catch (error) {
       console.error('Error deleting agency:', error);
@@ -146,6 +157,18 @@ export default function AgenciesManager() {
       zone: agency.zone,
     });
     setModalOpen(true);
+  };
+
+  // Open modal for details
+  const handleViewDetails = (agency: Agency) => {
+    setSelectedAgency(agency);
+    setDetailsModalOpen(true);
+  };
+
+  // Close details modal
+  const handleCloseDetails = () => {
+    setDetailsModalOpen(false);
+    setSelectedAgency(null);
   };
 
   const columns = [
@@ -180,6 +203,20 @@ export default function AgenciesManager() {
       render: (address: string) => address || '-',
     },
     {
+      title: 'Trajets',
+      dataIndex: '_count',
+      key: 'trajets',
+      render: (_count: any) => _count?.trajets || 0,
+      sorter: (a: Agency, b: Agency) => (a._count?.trajets || 0) - (b._count?.trajets || 0),
+    },
+    {
+      title: 'Bus',
+      dataIndex: '_count',
+      key: 'buses',
+      render: (_count: any) => _count?.buses || 0,
+      sorter: (a: Agency, b: Agency) => (a._count?.buses || 0) - (b._count?.buses || 0),
+    },
+    {
       title: 'Date de création',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -194,6 +231,14 @@ export default function AgenciesManager() {
         <Space>
           <Button
             type="link"
+            icon={<EyeOutlined />}
+            onClick={() => handleViewDetails(record)}
+            size="small"
+          >
+            Voir détails
+          </Button>
+          <Button
+            type="link"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
             size="small"
@@ -202,7 +247,7 @@ export default function AgenciesManager() {
           </Button>
           <Popconfirm
             title="Supprimer cette agence ?"
-            description="Cette action est irréversible."
+            description="Cette action supprimera également tous les trajets, bus, voyages et réservations associés à cette agence. Cette action est irréversible."
             onConfirm={() => handleDelete(record.id)}
             okText="Supprimer"
             cancelText="Annuler"
@@ -319,8 +364,16 @@ export default function AgenciesManager() {
               placeholder="Adresse complète de l'agence"
             />
           </Form.Item>
-        </Form>
-      </Modal>
-    </div>
-  );
-}
+                 </Form>
+       </Modal>
+
+       {/* Modal pour afficher les détails de l'agence */}
+       <DetailsModal
+         open={detailsModalOpen}
+         onClose={handleCloseDetails}
+         data={selectedAgency}
+         type="agency"
+       />
+     </div>
+   );
+ }

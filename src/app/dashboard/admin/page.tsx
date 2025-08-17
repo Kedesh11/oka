@@ -30,8 +30,10 @@ import {
   Mail
 } from 'lucide-react';
 import AgenciesManager from '@/components/dashboard/agencies/AgenciesManager';
-import { useUsersManagement, useReportsManagement, useSystemStats, useSystemSettings, useSecurityManagement } from '@/utils/dashboardActions';
-import { UserModal, SecuritySettingsModal } from '@/utils/dashboardModals';
+import { useSystemStats, useSystemSettings, useSecurityManagement } from '@/utils/dashboardActions';
+import { SecuritySettingsModal } from '@/utils/dashboardModals';
+import UsersManager from '@/components/dashboard/users/UsersManager';
+import ReportsManager from '@/components/dashboard/reports/ReportsManager';
 
 const { Title, Text } = Typography;
 
@@ -123,255 +125,11 @@ const OverviewTab = () => {
   );
 };
 
-// Composant Utilisateurs
-const UsersTab = () => {
-  const { users, loading, fetchUsers, createUser, updateUser, deleteUser } = useUsersManagement();
-  const [userModalVisible, setUserModalVisible] = useState(false);
-  const [editingUser, setEditingUser] = useState<any>(null);
 
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
-
-  const handleCreateUser = async (values: any) => {
-    try {
-      await createUser(values);
-      setUserModalVisible(false);
-    } catch (error) {
-      console.error('Erreur lors de la création:', error);
-    }
-  };
-
-  const handleUpdateUser = async (values: any) => {
-    try {
-      await updateUser(editingUser.id, values);
-      setUserModalVisible(false);
-      setEditingUser(null);
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour:', error);
-    }
-  };
-
-  const handleEditUser = (user: any) => {
-    setEditingUser(user);
-    setUserModalVisible(true);
-  };
-
-  const handleDeleteUser = (id: number) => {
-    deleteUser(id);
-  };
-
-  const columns = [
-    {
-      title: 'Utilisateur',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text: string, record: any) => (
-        <Space>
-          <Avatar icon={<UserOutlined />} />
-          <div>
-            <div>{text}</div>
-            <Text type="secondary">{record.email}</Text>
-          </div>
-        </Space>
-      ),
-    },
-    {
-      title: 'Rôle',
-      dataIndex: 'role',
-      key: 'role',
-      render: (role: string) => (
-        <Tag color={role === 'Admin' ? 'red' : role === 'Agence' ? 'blue' : 'green'}>
-          {role}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Statut',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => (
-        <Tag color={status === 'active' ? 'green' : 'red'}>
-          {status === 'active' ? 'Actif' : 'Inactif'}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Dernière connexion',
-      dataIndex: 'lastLogin',
-      key: 'lastLogin',
-      render: (date: string) => new Date(date).toLocaleDateString('fr-FR'),
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_: any, record: any) => (
-        <Space>
-          <Button type="link" icon={<EyeOutlined />} size="small">
-            Voir
-          </Button>
-          <Button 
-            type="link" 
-            icon={<EditOutlined />} 
-            size="small"
-            onClick={() => handleEditUser(record)}
-          >
-            Modifier
-          </Button>
-          <Button 
-            type="link" 
-            danger 
-            icon={<DeleteOutlined />} 
-            size="small"
-            onClick={() => handleDeleteUser(record.id)}
-          >
-            Supprimer
-          </Button>
-        </Space>
-      ),
-    },
-  ];
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <Title level={2}>Gestion des Utilisateurs</Title>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />}
-          onClick={() => setUserModalVisible(true)}
-        >
-          Ajouter un utilisateur
-        </Button>
-      </div>
-      
-      <Card>
-        <Table 
-          columns={columns} 
-          dataSource={users} 
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            pageSize: 4,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} sur ${total} utilisateurs`,
-          }}
-        />
-      </Card>
-
-      <UserModal
-        visible={userModalVisible}
-        onCancel={() => {
-          setUserModalVisible(false);
-          setEditingUser(null);
-        }}
-        onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
-        initialValues={editingUser}
-        title={editingUser ? 'Modifier l\'utilisateur' : 'Ajouter un utilisateur'}
-        loading={loading}
-      />
-    </div>
-  );
-};
 
 // Composant Rapports
 const ReportsTab = () => {
-  const { reports, loading, fetchReports, generateReport, downloadReport } = useReportsManagement();
-
-  useEffect(() => {
-    fetchReports();
-  }, [fetchReports]);
-
-  const handleGenerateReport = async (type: string) => {
-    try {
-      await generateReport(type as any);
-    } catch (error) {
-      console.error('Erreur lors de la génération:', error);
-    }
-  };
-
-  const handleDownloadReport = (id: number) => {
-    downloadReport(id);
-  };
-
-  return (
-    <div className="space-y-6">
-      <Title level={2}>Rapports et Analyses</Title>
-      
-      <Row gutter={[16, 16]}>
-        <Col xs={24} lg={12}>
-          <Card title="Rapports Disponibles">
-            <List
-              dataSource={reports}
-              renderItem={(item) => (
-                <List.Item
-                  actions={[
-                    <Button type="link" key="view">Voir</Button>,
-                    <Button 
-                      type="link" 
-                      key="download"
-                      onClick={() => handleDownloadReport(item.id)}
-                      disabled={item.status !== 'Généré'}
-                    >
-                      Télécharger
-                    </Button>
-                  ]}
-                >
-                  <List.Item.Meta
-                    title={item.title}
-                    description={`${item.type} • ${item.date}`}
-                  />
-                  <Tag color={item.status === 'Généré' ? 'green' : 'orange'}>
-                    {item.status}
-                  </Tag>
-                </List.Item>
-              )}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} lg={12}>
-          <Card title="Générer un nouveau rapport">
-            <Space direction="vertical" style={{ width: '100%' }}>
-              <Button 
-                type="primary" 
-                block 
-                icon={<RiseOutlined />}
-                onClick={() => handleGenerateReport('Ventes')}
-                loading={loading}
-              >
-                Rapport de ventes
-              </Button>
-              <Button 
-                block 
-                icon={<Route />}
-                onClick={() => handleGenerateReport('Trajets')}
-                loading={loading}
-              >
-                Rapport des trajets
-              </Button>
-              <Button 
-                block 
-                icon={<Users />}
-                onClick={() => handleGenerateReport('Utilisateurs')}
-                loading={loading}
-              >
-                Rapport utilisateurs
-              </Button>
-              <Button 
-                block 
-                icon={<Ticket />}
-                onClick={() => handleGenerateReport('Réservations')}
-                loading={loading}
-              >
-                Rapport réservations
-              </Button>
-            </Space>
-          </Card>
-        </Col>
-      </Row>
-    </div>
-  );
+  return <ReportsManager />;
 };
 
 // Composant Sécurité
@@ -522,7 +280,7 @@ const AdminDashboard = () => {
       case 'overview':
         return <OverviewTab />;
       case 'users':
-        return <UsersTab />;
+        return <UsersManager />;
       case 'agencies':
         return <AgenciesManager />;
       case 'reports':

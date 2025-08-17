@@ -28,6 +28,11 @@ export interface User {
   lastLogin: string;
   phone?: string;
   address?: string;
+  agenceId?: number;
+  agence?: {
+    id: number;
+    name: string;
+  };
 }
 
 export interface Report {

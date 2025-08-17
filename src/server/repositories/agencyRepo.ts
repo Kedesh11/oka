@@ -36,29 +36,111 @@ export const agencyRepo = {
     return prisma.agence.delete({ where: { id } });
   },
 
+  async deleteWithCascade(id: number) {
+    return prisma.$transaction(async (tx) => {
+      // 1. Supprimer toutes les assignations de sièges liées aux voyages de cette agence
+      await tx.seatAssignment.deleteMany({
+        where: {
+          voyage: {
+            bus: {
+              agenceId: id
+            }
+          }
+        }
+      });
+
+      // 2. Supprimer tous les passagers de réservation liés aux réservations de cette agence
+      await tx.reservationPassenger.deleteMany({
+        where: {
+          reservation: {
+            trajet: {
+              agenceId: id
+            }
+          }
+        }
+      });
+
+      // 3. Supprimer toutes les réservations liées aux trajets de cette agence
+      await tx.reservation.deleteMany({
+        where: {
+          trajet: {
+            agenceId: id
+          }
+        }
+      });
+
+      // 4. Supprimer tous les voyages liés aux trajets de cette agence
+      await tx.voyage.deleteMany({
+        where: {
+          trajet: {
+            agenceId: id
+          }
+        }
+      });
+
+      // 5. Supprimer tous les sièges de bus liés aux bus de cette agence
+      await tx.busSeat.deleteMany({
+        where: {
+          bus: {
+            agenceId: id
+          }
+        }
+      });
+
+      // 6. Supprimer tous les trajets de cette agence
+      await tx.trajet.deleteMany({
+        where: {
+          agenceId: id
+        }
+      });
+
+      // 7. Supprimer tous les bus de cette agence
+      await tx.bus.deleteMany({
+        where: {
+          agenceId: id
+        }
+      });
+
+      // 8. Supprimer tous les utilisateurs associés à cette agence
+      await tx.user.updateMany({
+        where: {
+          agenceId: id
+        },
+        data: {
+          agenceId: null
+        }
+      });
+
+      // 9. Enfin, supprimer l'agence elle-même
+      return tx.agence.delete({
+        where: { id }
+      });
+    });
+  },
+
   async findByRoute(params: { depart: string; arrivee: string }) {
     const { depart, arrivee } = params;
-    return prisma.agence.findMany({
-      where: {
-        trajets: {
-          some: {
-            depart: { contains: depart, mode: "insensitive" },
-            arrivee: { contains: arrivee, mode: "insensitive" },
+          return prisma.agence.findMany({
+        where: {
+          trajets: {
+            some: {
+              depart: { contains: depart },
+              arrivee: { contains: arrivee },
+            },
+          },
+        } as Prisma.AgenceWhereInput,
+        include: {
+          trajets: {
+            where: {
+              depart: { contains: depart },
+              arrivee: { contains: arrivee },
+            },
+            orderBy: { id: "desc" },
+            take: 20,
           },
         },
-      } as Prisma.AgenceWhereInput,
-      include: {
-        trajets: {
-          where: {
-            depart: { contains: depart, mode: "insensitive" },
-            arrivee: { contains: arrivee, mode: "insensitive" },
-          },
-          orderBy: { id: "desc" },
-          take: 20,
-        },
-      },
-      orderBy: { id: "asc" },
-      take: 50,
-    });
+        orderBy: { id: "asc" },
+        take: 50,
+      });
   },
 };

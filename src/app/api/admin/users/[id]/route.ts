@@ -29,6 +29,13 @@ export async function GET(
         lastLogin: true,
         phone: true,
         address: true,
+        agenceId: true,
+        agence: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
@@ -65,7 +72,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, email, role, status, phone, address } = body;
+    const { name, email, role, status, phone, address, agenceId } = body;
 
     // Vérifier si l'utilisateur existe
     const existingUser = await prisma.user.findUnique({
@@ -93,6 +100,28 @@ export async function PUT(
       }
     }
 
+    // Vérifier que l'agenceId est fourni pour les utilisateurs de type 'Agence'
+    if (role === 'Agence' && (agenceId === undefined || agenceId === null)) {
+      return NextResponse.json(
+        { error: 'Un utilisateur de type Agence doit être associé à une agence' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier que l'agence existe si agenceId est fourni
+    if (agenceId !== undefined && agenceId !== null) {
+      const agency = await prisma.agence.findUnique({
+        where: { id: agenceId },
+      });
+
+      if (!agency) {
+        return NextResponse.json(
+          { error: 'L\'agence sélectionnée n\'existe pas' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Mettre à jour l'utilisateur
     const updatedUser = await prisma.user.update({
       where: { id },
@@ -100,9 +129,10 @@ export async function PUT(
         name: name || existingUser.name,
         email: email || existingUser.email,
         role: role || existingUser.role,
-        status: status || existingUser.status,
+        status: status ? (status === 'ACTIVE' ? 'active' : 'inactive') : existingUser.status,
         phone: phone !== undefined ? phone : existingUser.phone,
         address: address !== undefined ? address : existingUser.address,
+        agenceId: agenceId !== undefined ? agenceId : existingUser.agenceId,
       },
       select: {
         id: true,
@@ -113,6 +143,13 @@ export async function PUT(
         lastLogin: true,
         phone: true,
         address: true,
+        agenceId: true,
+        agence: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 

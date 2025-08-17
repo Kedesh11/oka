@@ -20,9 +20,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log("Received body:", body);
+    
     const parsed = CreateAgencySchema.safeParse(body);
 
     if (!parsed.success) {
+      console.log("Validation error:", parsed.error.flatten());
       return NextResponse.json({ error: "Invalid body", details: parsed.error.flatten() }, { status: 400 });
     }
 

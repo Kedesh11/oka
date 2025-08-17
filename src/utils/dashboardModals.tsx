@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Select, Button, Switch, DatePicker } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined } from '@ant-design/icons';
 import { User } from './dashboardActions';
@@ -18,6 +18,11 @@ interface UserModalProps {
   loading?: boolean;
 }
 
+interface Agency {
+  id: number;
+  name: string;
+}
+
 export const UserModal: React.FC<UserModalProps> = ({
   visible,
   onCancel,
@@ -27,6 +32,27 @@ export const UserModal: React.FC<UserModalProps> = ({
   loading = false,
 }) => {
   const [form] = Form.useForm();
+  const [agencies, setAgencies] = useState<Agency[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string>(initialValues?.role || '');
+
+  // Charger les agences quand le modal s'ouvre
+  useEffect(() => {
+    if (visible) {
+      fetchAgencies();
+    }
+  }, [visible]);
+
+  const fetchAgencies = async () => {
+    try {
+      const response = await fetch('/api/admin/agencies');
+      if (response.ok) {
+        const data = await response.json();
+        setAgencies(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des agences:', error);
+    }
+  };
 
   const handleSubmit = async () => {
     try {
@@ -92,12 +118,31 @@ export const UserModal: React.FC<UserModalProps> = ({
           label="Rôle"
           rules={[{ required: true, message: 'Le rôle est requis' }]}
         >
-          <Select placeholder="Sélectionner un rôle">
+          <Select 
+            placeholder="Sélectionner un rôle"
+            onChange={(value) => setSelectedRole(value)}
+          >
             <Option value="Admin">Administrateur</Option>
             <Option value="Agence">Agence</Option>
             <Option value="Client">Client</Option>
           </Select>
         </Form.Item>
+
+        {selectedRole === 'Agence' && (
+          <Form.Item
+            name="agenceId"
+            label="Agence associée"
+            rules={[{ required: true, message: 'Une agence doit être sélectionnée pour un utilisateur de type Agence' }]}
+          >
+            <Select placeholder="Sélectionner une agence">
+              {agencies.map((agency) => (
+                <Option key={agency.id} value={agency.id}>
+                  {agency.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        )}
 
         <Form.Item
           name="status"
