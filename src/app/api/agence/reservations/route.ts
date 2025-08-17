@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/server/db/prisma';
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {
@@ -28,11 +27,11 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, statut, note } = body;
+    const { id, statut } = body;
 
     if (!id || !statut) {
       return NextResponse.json(
-        { error: 'L\'ID et le statut sont requis' },
+        { error: "L'ID et le statut sont requis" },
         { status: 400 }
       );
     }
@@ -41,7 +40,6 @@ export async function PUT(request: NextRequest) {
       where: { id: parseInt(id) },
       data: {
         statut: statut as any, // Cast to match Prisma enum type
-        note: note || null,
       },
     });
 
@@ -54,3 +52,4 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+

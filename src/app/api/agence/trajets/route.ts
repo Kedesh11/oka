@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/server/db/prisma';
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {
@@ -30,6 +29,15 @@ export async function POST(request: NextRequest) {
     if (!depart || !arrivee || !heure || prixAdulte === undefined || prixEnfant === undefined || !statut || agenceId === undefined) {
       return NextResponse.json(
         { error: 'Tous les champs obligatoires doivent être remplis' },
+        { status: 400 }
+      );
+    }
+
+    // Ensure the agency exists to avoid FK constraint errors
+    const agency = await prisma.agence.findUnique({ where: { id: agenceId } });
+    if (!agency) {
+      return NextResponse.json(
+        { error: "L'agence spécifiée n'existe pas" },
         { status: 400 }
       );
     }

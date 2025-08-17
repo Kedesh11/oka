@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/server/db/prisma';
+export const runtime = 'nodejs';
 
 // GET - Récupérer tous les rapports
 export async function GET() {
@@ -60,7 +59,14 @@ export async function POST(request: NextRequest) {
                 trajet: true,
               },
             });
-            const totalRevenue = reservations.reduce((sum, res) => sum + (res.prix || 0), 0);
+            const totalRevenue = reservations.reduce((sum, res) => {
+              // Adults are total travelers minus children
+              const adults = Math.max((res.nbVoyageurs || 0) - (res.childrenCount || 0), 0);
+              const children = res.childrenCount || 0;
+              const adultPrice = res.trajet?.prixAdulte || 0;
+              const childPrice = res.trajet?.prixEnfant || 0;
+              return sum + adults * adultPrice + children * childPrice;
+            }, 0);
             content = { reservations, totalRevenue };
             summary = { totalRevenue, totalBookings: reservations.length };
             break;
@@ -134,3 +140,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

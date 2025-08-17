@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+export const runtime = 'nodejs';
+import { prisma } from '@/server/db/prisma';
 
 export async function GET() {
   try {
@@ -11,21 +10,25 @@ export async function GET() {
     });
     const totalReservations = await prisma.reservation.count();
     const confirmedReservations = await prisma.reservation.count({
-      where: { statut: 'confirmée' },
+      where: { statut: 'confirmee' },
     });
     const totalBuses = await prisma.bus.count();
     const activeVoyages = await prisma.voyage.count({
       where: { date: { gte: new Date() } }, // Voyages in the future
     });
 
-    // Calculate total revenue (example: sum of confirmed reservations)
-    const revenueResult = await prisma.reservation.aggregate({
-      _sum: {
-        prix: true,
-      },
-      where: { statut: 'confirmée' },
+    // Calculate total revenue from confirmed reservations based on trajet prices
+    const confirmedReservationRows = await prisma.reservation.findMany({
+      where: { statut: 'confirmee' },
+      include: { trajet: true },
     });
-    const totalRevenue = revenueResult._sum.prix || 0;
+    const totalRevenue = confirmedReservationRows.reduce((sum, res) => {
+      const adults = Math.max((res.nbVoyageurs || 0) - (res.childrenCount || 0), 0);
+      const children = res.childrenCount || 0;
+      const adultPrice = res.trajet?.prixAdulte || 0;
+      const childPrice = res.trajet?.prixEnfant || 0;
+      return sum + adults * adultPrice + children * childPrice;
+    }, 0);
 
     return NextResponse.json({
       totalTrajets,
@@ -44,3 +47,4 @@ export async function GET() {
     );
   }
 }
+

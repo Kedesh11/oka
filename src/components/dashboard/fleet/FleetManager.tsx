@@ -1,19 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Button, Modal, Form, Input, InputNumber, Table, message as antdMessage, Space, Tag } from "antd";
 import { useApiUrl } from "@/hooks/use-api-url";
+import SectionHeader from "@/components/dashboard/common/SectionHeader";
+import ScrollablePanel from "@/components/dashboard/common/ScrollablePanel";
+import type { Bus } from "@/components/dashboard/common/domain";
+import { apiGet, apiPost } from "@/lib/apiClient";
+import { BusSchema, ListResponse } from "@/components/dashboard/common/schemas";
+import { z } from "zod";
 
-type Bus = {
-  id: number;
-  agenceId: number;
-  name: string;
-  type: string;
-  seatCount: number;
-  seatsPerRow: number;
-  layout?: string; // Added optional layout field
-  createdAt: string;
-};
+// Bus type imported from domain
 
 export default function FleetManager() {
   const [messageApi, contextHolder] = antdMessage.useMessage();
@@ -23,38 +20,49 @@ export default function FleetManager() {
   const [form] = Form.useForm();
   const { getApiUrl } = useApiUrl();
 
-  const fetchBuses = async () => {
+  const fetchBuses = useCallback(async () => {
     setLoading(true);
     try {
       // TODO: Filter buses by agenceId once authentication is implemented
-      const res = await fetch(getApiUrl("/api/fleet/buses"), { cache: "no-store" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erreur de chargement des bus");
-      setItems(data.items || []);
+      const raw = await apiGet<any>(getApiUrl("/api/fleet/buses"), { cache: "no-store" });
+      const parsed = ListResponse(BusSchema).safeParse(raw);
+      if (!parsed.success) throw new Error("Format de données bus invalide");
+      setItems(parsed.data.items || []);
     } catch (e: any) {
       messageApi.error(e.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [getApiUrl, messageApi]);
 
   useEffect(() => {
     fetchBuses();
-  }, [fetchBuses, getApiUrl]);
+  }, [fetchBuses]);
 
   const handleCreate = async () => {
     try {
       const values = await form.validateFields();
+      const FormSchema = z.object({
+        name: z.string().min(1, "Nom requis"),
+        type: z.string().optional(),
+        seatCount: z.number().int().positive({ message: "Nombre de sièges > 0" }),
+        seatsPerRow: z.number().int().min(1).max(6).optional(),
+      });
+      const formParsed = FormSchema.safeParse(values);
+      if (!formParsed.success) {
+        const fieldErrors = formParsed.error.issues.map((iss) => ({
+          name: iss.path as (string | number)[],
+          errors: [iss.message],
+        }));
+        form.setFields(fieldErrors as any);
+        return;
+      }
       // TODO: Get actual agenceId from authenticated user session
       const agenceId = 1; // Placeholder for now
 
-      const res = await fetch(getApiUrl("/api/fleet/buses"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...values, agenceId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Création de bus impossible");
+      const created = await apiPost<any>(getApiUrl("/api/fleet/buses"), { ...values, agenceId });
+      const createdParsed = BusSchema.safeParse(created);
+      if (!createdParsed.success) throw new Error("Réponse de création de bus invalide");
       messageApi.success("Bus créé avec succès");
       setOpen(false);
       form.resetFields();
@@ -68,27 +76,29 @@ export default function FleetManager() {
   return (
     <div className="space-y-4">
       {contextHolder}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Flotte</h2>
-        <Button type="primary" onClick={() => setOpen(true)}>+ Ajouter un bus</Button>
-      </div>
-
-      <Table
-        size="middle"
-        loading={loading}
-        rowKey="id"
-        dataSource={items}
-        columns={[
-          { title: "Nom", dataIndex: "name" },
-          { title: "Type", dataIndex: "type" },
-          { title: "Sièges", dataIndex: "seatCount" },
-          { title: "Par rangée", dataIndex: "seatsPerRow" },
-          {
-            title: "Statut",
-            render: () => <Tag color="blue">actif</Tag>, // Assuming all buses are active for now
-          },
-        ]}
+      <SectionHeader
+        title={<span className="text-lg font-semibold">Flotte</span>}
+        actions={<Button type="primary" onClick={() => setOpen(true)}>+ Ajouter un bus</Button>}
       />
+
+      <ScrollablePanel maxHeight="calc(100vh - 240px)">
+        <Table
+          size="middle"
+          loading={loading}
+          rowKey="id"
+          dataSource={items}
+          columns={[
+            { title: "Nom", dataIndex: "name" },
+            { title: "Type", dataIndex: "type" },
+            { title: "Sièges", dataIndex: "seatCount" },
+            { title: "Par rangée", dataIndex: "seatsPerRow" },
+            {
+              title: "Statut",
+              render: () => <Tag color="blue">actif</Tag>, // Assuming all buses are active for now
+            },
+          ]}
+        />
+      </ScrollablePanel>
 
       <Modal
         title="Nouveau bus"
@@ -96,6 +106,8 @@ export default function FleetManager() {
         onCancel={() => setOpen(false)}
         onOk={handleCreate}
         okText="Créer"
+        styles={{ body: { maxHeight: '70vh', overflowY: 'auto' } }}
+        style={{ top: 24 }}
       >
         <Form form={form} layout="vertical" initialValues={{ seatsPerRow: 4 }}>
           <Form.Item label="Nom" name="name" rules={[{ required: true, message: "Nom requis" }]}>

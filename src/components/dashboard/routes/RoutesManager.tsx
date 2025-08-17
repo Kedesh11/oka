@@ -1,25 +1,35 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Button, Card, Form, Input, InputNumber, Select, Space, Tag, Typography, message, Modal, Spin, Empty, Table } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined } from "@ant-design/icons";
+import React, { useState, useEffect, useCallback } from "react";
+import { Button, Form, Input, InputNumber, Select, Space, Tag, Typography, message, Modal, Spin, Empty, Table } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useApiUrl } from "@/hooks/use-api-url";
 import dayjs from "dayjs";
 import { TimePicker } from "antd";
 import { GABON_CITIES } from "@/data/gabonCities";
+import SectionHeader from "@/components/dashboard/common/SectionHeader";
+import ScrollablePanel from "@/components/dashboard/common/ScrollablePanel";
+import type { Trajet as TrajetModel } from "@/components/dashboard/common/domain";
+import { apiGet, apiPost, apiRequest } from "@/lib/apiClient";
+import { z } from "zod";
+import { TrajetSchema as BaseTrajetSchema } from "@/components/dashboard/common/schemas";
 
 const { Title, Text } = Typography;
 
-interface Trajet {
-  id: number;
-  depart: string;
-  arrivee: string;
-  heure: string;
+interface Trajet extends TrajetModel {
   prixAdulte: number;
   prixEnfant: number;
   statut: 'actif' | 'inactif';
-  agenceId: number; // Assuming agenceId will be part of the Trajet model
+  agenceId: number;
 }
+
+// Zod schema aligned with this component's Trajet shape
+const TrajetWithPricingSchema = BaseTrajetSchema.extend({
+  prixAdulte: z.number(),
+  prixEnfant: z.number(),
+  statut: z.enum(["actif", "inactif"]),
+  agenceId: z.number(),
+});
 
 interface RouteFormValues extends Omit<Trajet, 'id' | 'agenceId'> {}
 
@@ -32,28 +42,25 @@ export default function RoutesManager() {
   const [messageApi, contextHolder] = message.useMessage();
   const { getApiUrl } = useApiUrl();
 
-  const fetchTrajets = async () => {
+  const fetchTrajets = useCallback(async () => {
     setLoading(true);
     try {
       // TODO: Filter by agenceId once auth is implemented
-      const response = await fetch(getApiUrl("/api/agence/trajets"));
-      const data = await response.json();
-      if (response.ok) {
-        setTrajets(data);
-      } else {
-        messageApi.error("Erreur lors du chargement des trajets");
-      }
+      const raw = await apiGet<any>(getApiUrl("/api/agence/trajets"));
+      const items = Array.isArray(raw) ? raw : [];
+      const valid: Trajet[] = items.filter((t: any) => TrajetWithPricingSchema.safeParse(t).success);
+      setTrajets(valid);
     } catch (error) {
       console.error("Error fetching trajets:", error);
       messageApi.error("Erreur lors du chargement des trajets");
     } finally {
       setLoading(false);
     }
-  };
+  }, [getApiUrl, messageApi]);
 
   useEffect(() => {
     fetchTrajets();
-  }, [fetchTrajets, getApiUrl, messageApi]);
+  }, [fetchTrajets]);
 
   const handleAddEdit = (trajet?: Trajet) => {
     setEditingTrajet(trajet || null);
@@ -65,51 +72,67 @@ export default function RoutesManager() {
   };
 
   const handleDelete = async (id: number) => {
-    try {
-      setLoading(true);
-      // TODO: Implement delete API for trajets
-      // const response = await fetch(getApiUrl(`/api/agence/trajets/${id}`), { method: 'DELETE' });
-      // if (!response.ok) throw new Error('Échec de la suppression');
-      setTrajets(prev => prev.filter(t => t.id !== id));
-      messageApi.success("Trajet supprimé avec succès");
-    } catch (error) {
-      console.error("Error deleting trajet:", error);
-      messageApi.error("Erreur lors de la suppression du trajet");
-    } finally {
-      setLoading(false);
-    }
+    Modal.confirm({
+      title: "Supprimer ce trajet ?",
+      content: "Cette action est irréversible.",
+      okText: "Supprimer",
+      okButtonProps: { danger: true },
+      cancelText: "Annuler",
+      onOk: async () => {
+        try {
+          setLoading(true);
+          await apiRequest(getApiUrl(`/api/agence/trajets/${id}`), { method: "DELETE" });
+          messageApi.success("Trajet supprimé avec succès");
+          fetchTrajets();
+        } catch (error) {
+          console.error("Error deleting trajet:", error);
+          messageApi.error("Erreur lors de la suppression du trajet");
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   const handleOk = async () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
+
+      // Zod validation for form values before building payload
+      const FormSchema = z.object({
+        depart: z.string().min(1),
+        arrivee: z.string().min(1),
+        heure: z.any(), // Dayjs, checked below
+        prixAdulte: z.number().nonnegative(),
+        prixEnfant: z.number().nonnegative(),
+        statut: z.enum(["actif", "inactif"]),
+      });
+      const parsed = FormSchema.safeParse(values);
+      if (!parsed.success) {
+        // Map Zod issues to AntD field errors
+        const fieldErrors = parsed.error.issues.map((iss) => ({
+          name: iss.path as (string | number)[],
+          errors: [iss.message],
+        }));
+        form.setFields(fieldErrors as any);
+        return; // Abort submit
+      }
+
       const payload = {
         ...values,
         heure: values.heure ? dayjs(values.heure).format("HH:mm") : undefined,
         agenceId: 1, // TODO: Get actual agenceId from authenticated user session
       };
 
-      let response;
       if (editingTrajet) {
-        // TODO: Implement PUT API for trajets
-        // response = await fetch(getApiUrl(`/api/agence/trajets/${editingTrajet.id}`), {
-        //   method: 'PUT',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(payload),
-        // });
+        await apiRequest(getApiUrl(`/api/agence/trajets/${editingTrajet.id}`), { method: "PUT", body: payload });
         messageApi.success("Trajet modifié avec succès");
       } else {
-        response = await fetch(getApiUrl("/api/agence/trajets"), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Échec de la création");
-        }
-        const newTrajet = await response.json();
+        const created = await apiPost<any>(getApiUrl("/api/agence/trajets"), payload);
+        const parsed = TrajetWithPricingSchema.safeParse(created);
+        if (!parsed.success) throw new Error("Réponse de création invalide");
+        const newTrajet: Trajet = parsed.data as Trajet;
         setTrajets(prev => [...prev, newTrajet]);
         messageApi.success("Trajet ajouté avec succès");
       }
@@ -161,24 +184,32 @@ export default function RoutesManager() {
   return (
     <div className="space-y-6">
       {contextHolder}
-      <Title level={2}>Gestion des Trajets</Title>
-      <Button type="primary" icon={<PlusOutlined />} onClick={() => handleAddEdit()}>Ajouter un Trajet</Button>
-      {loading && trajets.length === 0 ? (
-        <div className="text-center py-8">
-          <Spin size="large" />
-          <div className="mt-4"><Text type="secondary">Chargement des trajets...</Text></div>
-        </div>
-      ) : trajets.length === 0 ? (
-        <Empty description="Aucun trajet disponible" />
-      ) : (
-        <Table
-          dataSource={trajets}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-        />
-      )}
+      <SectionHeader
+        title={<Title level={2} style={{ margin: 0 }}>Gestion des Trajets</Title>}
+        actions={(
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => handleAddEdit()}>
+            Ajouter un Trajet
+          </Button>
+        )}
+      />
+      <ScrollablePanel maxHeight="calc(100vh - 240px)">
+        {loading && trajets.length === 0 ? (
+          <div className="text-center py-8">
+            <Spin size="large" />
+            <div className="mt-4"><Text type="secondary">Chargement des trajets...</Text></div>
+          </div>
+        ) : trajets.length === 0 ? (
+          <Empty description="Aucun trajet disponible" />
+        ) : (
+          <Table
+            dataSource={trajets}
+            columns={columns}
+            rowKey="id"
+            loading={loading}
+            pagination={{ pageSize: 10 }}
+          />
+        )}
+      </ScrollablePanel>
 
       <Modal
         title={editingTrajet ? "Modifier le Trajet" : "Ajouter un Nouveau Trajet"}
@@ -186,6 +217,8 @@ export default function RoutesManager() {
         onOk={handleOk}
         onCancel={handleCancel}
         confirmLoading={loading}
+        styles={{ body: { maxHeight: '70vh', overflowY: 'auto' } }}
+        style={{ top: 24 }}
         destroyOnClose
       >
         <Form form={form} layout="vertical">
