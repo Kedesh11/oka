@@ -31,10 +31,13 @@ export async function GET() {
       },
     });
     
-    const totalRevenue = confirmedReservations.reduce((sum, reservation) => {
-      const adultPrice = reservation.trajet.prixAdulte * (reservation.nbVoyageurs - reservation.childrenCount);
-      const childPrice = reservation.trajet.prixEnfant * reservation.childrenCount;
-      return sum + adultPrice + childPrice;
+    const totalRevenue = confirmedReservations.reduce((sum: number, reservation: any) => {
+      if (reservation.trajet) {
+        const adultPrice = reservation.trajet.prixAdulte * (reservation.nbVoyageurs - reservation.childrenCount);
+        const childPrice = reservation.trajet.prixEnfant * reservation.childrenCount;
+        return sum + adultPrice + childPrice;
+      }
+      return sum;
     }, 0);
     
     // Calculer le taux de réservation (réservations confirmées / total des voyages)

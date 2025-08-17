@@ -239,7 +239,7 @@ export default function UsersManager() {
         { text: 'Agence', value: 'Agence' },
         { text: 'Client', value: 'Client' },
       ],
-      onFilter: (value: string, record: User) => record.role === value,
+      onFilter: (value: React.Key | boolean, record: User) => record.role === value,
     },
     {
       title: 'Statut',

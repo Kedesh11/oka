@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+export const runtime = 'nodejs';
+import { prisma } from '@/server/db/prisma';
 
 // GET - Récupérer tous les utilisateurs
 export async function GET() {
@@ -87,13 +86,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Normaliser le status pour l'enum Prisma ('active' | 'inactive')
+    const normalizedStatus = (typeof status === 'string')
+      ? (status.toLowerCase() === 'active' ? 'active' : 'inactive')
+      : 'inactive';
+
     // Créer l'utilisateur
     const user = await prisma.user.create({
       data: {
         name,
         email,
         role,
-        status: status === 'ACTIVE' ? 'active' : 'inactive',
+        status: normalizedStatus,
         phone: phone || null,
         address: address || null,
         password, // Note: Dans un vrai projet, le mot de passe devrait être hashé

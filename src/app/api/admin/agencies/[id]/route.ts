@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+export const runtime = 'nodejs';
 import { agencyService } from "@/server/services/agencyService";
 import { UpdateAgencySchema } from "@/features/agencies/schemas";
 
