@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Button, Modal, Form, Input, InputNumber, Table, message as antdMessage, Space, Tag } from "antd";
+import { useApiUrl } from "@/hooks/use-api-url";
 
 type Bus = {
   id: number;
@@ -10,6 +11,7 @@ type Bus = {
   type: string;
   seatCount: number;
   seatsPerRow: number;
+  layout?: string; // Added optional layout field
   createdAt: string;
 };
 
@@ -19,13 +21,15 @@ export default function FleetManager() {
   const [items, setItems] = useState<Bus[]>([]);
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
+  const { getApiUrl } = useApiUrl();
 
   const fetchBuses = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/fleet/buses", { cache: "no-store" });
+      // TODO: Filter buses by agenceId once authentication is implemented
+      const res = await fetch(getApiUrl("/api/fleet/buses"), { cache: "no-store" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erreur de chargement");
+      if (!res.ok) throw new Error(data.error || "Erreur de chargement des bus");
       setItems(data.items || []);
     } catch (e: any) {
       messageApi.error(e.message);
@@ -36,19 +40,22 @@ export default function FleetManager() {
 
   useEffect(() => {
     fetchBuses();
-  }, []);
+  }, [fetchBuses, getApiUrl]);
 
   const handleCreate = async () => {
     try {
       const values = await form.validateFields();
-      const res = await fetch("/api/fleet/buses", {
+      // TODO: Get actual agenceId from authenticated user session
+      const agenceId = 1; // Placeholder for now
+
+      const res = await fetch(getApiUrl("/api/fleet/buses"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify({ ...values, agenceId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Création impossible");
-      messageApi.success("Bus créé");
+      if (!res.ok) throw new Error(data.error || "Création de bus impossible");
+      messageApi.success("Bus créé avec succès");
       setOpen(false);
       form.resetFields();
       fetchBuses();
@@ -78,7 +85,7 @@ export default function FleetManager() {
           { title: "Par rangée", dataIndex: "seatsPerRow" },
           {
             title: "Statut",
-            render: () => <Tag color="blue">actif</Tag>,
+            render: () => <Tag color="blue">actif</Tag>, // Assuming all buses are active for now
           },
         ]}
       />
@@ -105,8 +112,8 @@ export default function FleetManager() {
               <InputNumber min={1} max={6} style={{ width: 160 }} />
             </Form.Item>
           </Space>
-          <Form.Item label="Layout (optionnel)">
-            <Input.TextArea name="layout" placeholder="JSON du layout" rows={3} />
+          <Form.Item label="Layout (optionnel)" name="layout">
+            <Input.TextArea placeholder="JSON du layout" rows={3} />
           </Form.Item>
         </Form>
       </Modal>

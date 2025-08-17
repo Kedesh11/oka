@@ -1,37 +1,54 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Button, Card, DatePicker, Form, InputNumber, Select, Space, Statistic, message as antdMessage } from "antd";
 import dayjs, { Dayjs } from "dayjs";
+import { useApiUrl } from "@/hooks/use-api-url";
 
 export default function VoyagesManager() {
   const [messageApi, contextHolder] = antdMessage.useMessage();
   const [buses, setBuses] = useState<{ id: number; name: string }[]>([]);
+  const [trajets, setTrajets] = useState<{ id: number; depart: string; arrivee: string; heure: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [voyageId, setVoyageId] = useState<number | null>(null);
   const [occupancy, setOccupancy] = useState<{ totalSeats: number; taken: number; free: number; percent: number } | null>(null);
+  const { getApiUrl } = useApiUrl();
 
   const loadBuses = async () => {
     try {
-      const res = await fetch("/api/fleet/buses", { cache: "no-store" });
+      // TODO: Filter buses by agenceId once authentication is implemented
+      const res = await fetch(getApiUrl("/api/fleet/buses"), { cache: "no-store" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erreur");
+      if (!res.ok) throw new Error(data.error || "Erreur de chargement des bus");
       setBuses((data.items || []).map((b: any) => ({ id: b.id, name: b.name })));
     } catch (e: any) {
       messageApi.error(e.message);
     }
   };
 
-  React.useEffect(() => {
+  const loadTrajets = async () => {
+    try {
+      // TODO: Filter trajets by agenceId once authentication is implemented
+      const res = await fetch(getApiUrl("/api/agence/trajets"), { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erreur de chargement des trajets");
+      setTrajets((data || []).map((t: any) => ({ id: t.id, depart: t.depart, arrivee: t.arrivee, heure: t.heure })));
+    } catch (e: any) {
+      messageApi.error(e.message);
+    }
+  };
+
+  useEffect(() => {
     loadBuses();
-  }, []);
+    loadTrajets();
+  }, [getApiUrl]);
 
   const createVoyage = async () => {
     try {
       const values = await form.validateFields();
       setLoading(true);
-      const res = await fetch("/api/fleet/voyages", {
+      const res = await fetch(getApiUrl("/api/fleet/voyages"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -56,7 +73,7 @@ export default function VoyagesManager() {
   const refreshOccupancy = async () => {
     if (!voyageId) return;
     try {
-      const res = await fetch(`/api/fleet/voyages/${voyageId}/occupancy`, { cache: "no-store" });
+      const res = await fetch(getApiUrl(`/api/fleet/voyages/${voyageId}/occupancy`), { cache: "no-store" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur occupancy");
       setOccupancy(data);
@@ -69,7 +86,7 @@ export default function VoyagesManager() {
     if (!voyageId) return;
     try {
       setLoading(true);
-      const res = await fetch(`/api/fleet/voyages/${voyageId}/auto-assign`, { method: "POST" });
+      const res = await fetch(getApiUrl(`/api/fleet/voyages/${voyageId}/auto-assign`), { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Auto-assign échoué");
       messageApi.success(`Assignés: ${data.assigned}/${data.total}`);
@@ -87,8 +104,16 @@ export default function VoyagesManager() {
       <h2 className="text-lg font-semibold">Voyages</h2>
 
       <Form form={form} layout="inline" initialValues={{ date: dayjs() }}>
-        <Form.Item label="Trajet ID" name="trajetId" rules={[{ required: true, message: "Requis" }]}>
-          <InputNumber min={1} style={{ width: 120 }} />
+        <Form.Item label="Trajet" name="trajetId" rules={[{ required: true, message: "Requis" }]}>
+          <Select
+            style={{ width: 220 }}
+            options={trajets.map(t => ({ value: t.id, label: `${t.depart} - ${t.arrivee} (${t.heure})` }))}
+            placeholder="Choisir un trajet"
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+            }
+          />
         </Form.Item>
         <Form.Item label="Bus" name="busId" rules={[{ required: true, message: "Requis" }]}>
           <Select style={{ width: 220 }} options={buses.map(b => ({ value: b.id, label: b.name }))} placeholder="Choisir un bus" />

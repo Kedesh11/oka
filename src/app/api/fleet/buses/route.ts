@@ -1,31 +1,56 @@
-import { NextRequest, NextResponse } from "next/server";
-import { busRepo } from "@/server/repositories/busRepo";
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
-// WARNING: replace with real agenceId from auth/session
-const DEFAULT_AGENCE_ID = 1;
+const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    const items = await busRepo.listByAgence(DEFAULT_AGENCE_ID);
-    return NextResponse.json({ items });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    // TODO: Filter buses by agenceId once authentication is implemented
+    const buses = await prisma.bus.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return NextResponse.json({ items: buses });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des bus:', error);
+    return NextResponse.json(
+      { error: 'Erreur lors de la récupération des bus' },
+      { status: 500 }
+    );
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
-    const bus = await busRepo.create({
-      agenceId: DEFAULT_AGENCE_ID,
-      name: body.name,
-      type: body.type,
-      seatCount: Number(body.seatCount ?? 0),
-      seatsPerRow: Number(body.seatsPerRow ?? 4),
-      layout: body.layout ?? null,
+    const body = await request.json();
+    const { name, type, seatCount, seatsPerRow, layout, agenceId } = body;
+
+    if (!name || !type || !seatCount || !seatsPerRow || agenceId === undefined) {
+      return NextResponse.json(
+        { error: 'Tous les champs obligatoires doivent être remplis' },
+        { status: 400 }
+      );
+    }
+
+    const newBus = await prisma.bus.create({
+      data: {
+        name,
+        type,
+        seatCount,
+        seatsPerRow,
+        layout,
+        agenceId,
+      },
     });
-    return NextResponse.json({ bus });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+
+    return NextResponse.json(newBus, { status: 201 });
+  } catch (error) {
+    console.error('Erreur lors de la création du bus:', error);
+    return NextResponse.json(
+      { error: 'Erreur lors de la création du bus' },
+      { status: 500 }
+    );
   }
 }

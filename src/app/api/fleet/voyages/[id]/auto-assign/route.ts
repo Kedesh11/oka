@@ -1,12 +1,76 @@
-import { NextRequest, NextResponse } from "next/server";
-import { seatingService } from "@/server/services/seatingService";
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
-export async function POST(_: NextRequest, { params }: { params: { id: string } }) {
+const prisma = new PrismaClient();
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const voyageId = Number(params.id);
-    const res = await seatingService.autoAssign({ voyageId });
-    return NextResponse.json(res);
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    const voyageId = parseInt(params.id);
+
+    if (isNaN(voyageId)) {
+      return NextResponse.json({ error: 'ID de voyage invalide' }, { status: 400 });
+    }
+
+    const voyage = await prisma.voyage.findUnique({
+      where: { id: voyageId },
+      include: {
+        bus: {
+          include: {
+            seats: true,
+          },
+        },
+        reservations: {
+          include: {
+            passengers: true,
+          },
+        },
+        assignments: true, // Existing assignments
+      },
+    });
+
+    if (!voyage) {
+      return NextResponse.json({ error: 'Voyage non trouvé' }, { status: 404 });
+    }
+
+    const availableSeats = voyage.bus.seats.filter(seat =>
+      !voyage.assignments.some(assignment => assignment.busSeatId === seat.id)
+    );
+
+    const passengersToAssign = voyage.reservations.flatMap(reservation =>
+      reservation.passengers.filter(passenger =>
+        !voyage.assignments.some(assignment => assignment.passengerId === passenger.id)
+      )
+    );
+
+    let assignedCount = 0;
+    const newAssignments = [];
+
+    for (let i = 0; i < passengersToAssign.length && i < availableSeats.length; i++) {
+      newAssignments.push({
+        voyageId,
+        busSeatId: availableSeats[i].id,
+        passengerId: passengersToAssign[i].id,
+      });
+      assignedCount++;
+    }
+
+    if (newAssignments.length > 0) {
+      await prisma.seatAssignment.createMany({ data: newAssignments });
+    }
+
+    return NextResponse.json({
+      assigned: assignedCount,
+      total: passengersToAssign.length,
+      message: `${assignedCount} passagers assignés sur ${passengersToAssign.length} en attente.`,
+    });
+  } catch (error) {
+    console.error('Erreur lors de l\'auto-assignation des sièges:', error);
+    return NextResponse.json(
+      { error: 'Erreur lors de l\'auto-assignation des sièges' },
+      { status: 500 }
+    );
   }
 }
