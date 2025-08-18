@@ -6,6 +6,7 @@ type StatutReservationLiteral = "en_attente" | "confirmee" | "annulee";
 export type ReservationFilters = {
   trajetId?: number;
   statut?: StatutReservationLiteral;
+  agenceId?: number; // filter by agency via related trajet
 };
 
 export const reservationRepo = {
@@ -13,6 +14,7 @@ export const reservationRepo = {
     const where: any = {};
     if (filters.trajetId) where.trajetId = filters.trajetId;
     if (filters.statut) where.statut = filters.statut;
+    if (filters.agenceId) where.trajet = { agenceId: filters.agenceId };
 
     return prisma.reservation.findMany({ where, orderBy: { id: "desc" } });
   },

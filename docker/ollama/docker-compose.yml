@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_KEEP_ALIVE=5m
+      # Décommentez et adaptez pour forcer l'écoute sur 0.0.0.0 si besoin
+      # - OLLAMA_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "bash", "-lc", "curl -sf http://127.0.0.1:11434/api/tags >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    volumes:
+      - ollama_models:/root/.ollama
+      - /etc/localtime:/etc/localtime:ro
+    # GPU (NVIDIA) - optionnel
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: ["gpu"]
+
+  # Service one-shot pour télécharger le modèle au démarrage (après santé OK)
+  ollama-init:
+    image: curlimages/curl:8.7.1
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: ["sh", "-lc"]
+    # Utilise AI_MODEL s'il est présent, sinon fallback sur llama3.1:8b-instruct
+    command: >
+      "MODEL=${AI_MODEL:-llama3.1:8b-instruct}; \
+      echo Pulling $MODEL; \
+      curl -sf http://ollama:11434/api/pull -d '{"name":"'"$MODEL"'"}' || exit 1; \
+      echo Done"
+    environment:
+      - AI_MODEL
+    # Pas besoin de volumes; communique via HTTP au service ollama
+
+volumes:
+  ollama_models:
+    driver: local

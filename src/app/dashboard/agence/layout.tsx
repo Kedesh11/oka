@@ -29,6 +29,7 @@ export default function AgenceDashboardLayout({ children }: { children: React.Re
     { key: "overview", icon: <PieChartOutlined />, label: "Aperçu" },
     { key: "routes", icon: <CarOutlined />, label: "Trajets" },
     { key: "bookings", icon: <UsergroupAddOutlined />, label: "Réservations" },
+    { key: "agents", icon: <UserOutlined />, label: "Agents" },
     { key: "fleet", icon: <CarOutlined />, label: "Flotte" },
     { key: "voyages", icon: <CalendarOutlined />, label: "Voyages" },
     { key: "settings", icon: <SettingOutlined />, label: "Paramètres" },

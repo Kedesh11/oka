@@ -17,6 +17,7 @@ import FleetManager from "@/components/dashboard/fleet/FleetManager";
 import VoyagesManager from "@/components/dashboard/fleet/VoyagesManager";
 import RoutesManager from "@/components/dashboard/routes/RoutesManager"; // New import
 import ReservationsManager from "@/components/dashboard/reservations/ReservationsManager"; // New import
+import AgentsManager from "@/components/dashboard/agencies/AgentsManager";
 import { useApiUrl } from "@/hooks/use-api-url";
 
 const { Header, Content, Sider } = Layout;
@@ -180,6 +181,27 @@ export default function AgenceDashboardPage() {
 
   const currentTab = searchParams.get("tab") || "overview";
 
+  // Common data for Agents tab
+  const [me, setMe] = React.useState<{ email: string | null; role: string; agenceId: number | null } | null>(null);
+  const [agency, setAgency] = React.useState<any>(null);
+  React.useEffect(() => {
+    if (currentTab !== 'agents') return;
+    (async () => {
+      try {
+        const [meRes, agRes] = await Promise.all([
+          fetch('/api/auth/me'),
+          fetch('/api/agence/profile'),
+        ]);
+        const meJson = await meRes.json();
+        const agJson = await agRes.json();
+        if (meRes.ok) setMe(meJson);
+        if (agRes.ok) setAgency(agJson);
+      } catch (e) {
+        // no-op
+      }
+    })();
+  }, [currentTab]);
+
   const renderContent = () => {
     switch (currentTab) {
       case "overview":
@@ -188,6 +210,16 @@ export default function AgenceDashboardPage() {
         return <RoutesManager />;
       case "bookings":
         return <ReservationsManager />;
+      case "agents":
+        return me && agency ? (
+          <AgentsManager
+            agencyId={agency.id}
+            agencyEmail={agency.email}
+            currentUserEmail={me.email || ''}
+          />
+        ) : (
+          <div>Chargement…</div>
+        );
       case "fleet":
         return <FleetManager />;
       case "voyages":

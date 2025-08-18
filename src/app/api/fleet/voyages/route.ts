@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/db/prisma';
+import { getRequesterFromHeaders } from '@/server/auth/requester';
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // TODO: Filter voyages by agenceId once authentication is implemented
+    const req = await getRequesterFromHeaders(request.headers);
+    const isGlobal = req.role === 'Admin' || req.agenceId === null;
     const voyages = await prisma.voyage.findMany({
-      orderBy: {
-        date: 'desc',
-      },
-      include: {
-        trajet: true,
-        bus: true,
-      },
+      where: isGlobal ? {} : { trajet: { agenceId: req.agenceId ?? undefined } },
+      orderBy: { date: 'desc' },
+      include: { trajet: true, bus: true },
     });
 
     return NextResponse.json({ items: voyages });
@@ -27,6 +25,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const reqr = await getRequesterFromHeaders(request.headers);
     const body = await request.json();
     const { trajetId, busId, date } = body;
 
@@ -46,6 +45,13 @@ export async function POST(request: NextRequest) {
     }
     if (!bus) {
       return NextResponse.json({ error: 'Bus non trouvé' }, { status: 404 });
+    }
+
+    // Enforce access: non-admins must create within their own agency and matching entities
+    if (reqr.role !== 'Admin') {
+      if (!reqr.agenceId) return NextResponse.json({ error: 'Droits insuffisants' }, { status: 403 });
+      if (trajet.agenceId !== reqr.agenceId) return NextResponse.json({ error: 'Trajet hors agence' }, { status: 403 });
+      if (bus.agenceId !== reqr.agenceId) return NextResponse.json({ error: 'Bus hors agence' }, { status: 403 });
     }
 
     const newVoyage = await prisma.voyage.create({

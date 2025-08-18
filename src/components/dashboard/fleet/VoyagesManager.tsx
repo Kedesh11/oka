@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { Button, Card, DatePicker, Drawer, Form, Select, Space, Statistic, Table, message as antdMessage, Modal } from "antd";
+import { Button, Card, DatePicker, Drawer, Form, Select, Space, Statistic, Table, message as antdMessage, Modal, List } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import { useApiUrl } from "@/hooks/use-api-url";
 import SectionHeader from "@/components/dashboard/common/SectionHeader";
@@ -26,6 +26,9 @@ export default function VoyagesManager() {
   const [filterTrajetId, setFilterTrajetId] = useState<number | undefined>(undefined);
   const [filterBusId, setFilterBusId] = useState<number | undefined>(undefined);
   const [createOpen, setCreateOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiProposals, setAiProposals] = useState<Array<{ voyageId: number; busSeatId: number; passengerId: number }>>([]);
   const { getApiUrl } = useApiUrl();
 
   const loadBuses = useCallback(async () => {
@@ -76,7 +79,7 @@ export default function VoyagesManager() {
   useEffect(() => {
     const id = setInterval(() => {
       loadVoyages();
-    }, 30000); // 30s
+    }, 5000); // 5s
     return () => clearInterval(id);
   }, [loadVoyages]);
 
@@ -204,6 +207,40 @@ export default function VoyagesManager() {
     refreshOccupancy(v.id);
   };
 
+  const openAiPreview = async (voyageId?: number) => {
+    const id = voyageId ?? selectedVoyage?.id;
+    if (!id) return;
+    try {
+      setAiLoading(true);
+      const data = await apiPost<{ proposals: Array<{ voyageId: number; busSeatId: number; passengerId: number }>; meta?: any }>(
+        getApiUrl(`/api/fleet/voyages/${id}/ai-assign/preview`)
+      );
+      setAiProposals(data.proposals || []);
+      setAiOpen(true);
+    } catch (e: any) {
+      messageApi.error(e.message || "Erreur lors de la prévisualisation IA");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const applyAiAssignments = async () => {
+    const id = selectedVoyage?.id;
+    if (!id) return;
+    try {
+      setAiLoading(true);
+      await apiPost<any>(getApiUrl(`/api/fleet/voyages/${id}/ai-assign/apply`), { proposals: aiProposals });
+      messageApi.success("Assignations IA appliquées");
+      setAiOpen(false);
+      await refreshOccupancy(id);
+      await loadVoyages();
+    } catch (e: any) {
+      messageApi.error(e.message || "Échec de l'application IA");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {contextHolder}
@@ -217,6 +254,29 @@ export default function VoyagesManager() {
           </Space>
         )}
       />
+
+      <Modal
+        title={selectedVoyage ? `Proposition IA pour le voyage #${selectedVoyage.id}` : "Proposition IA"}
+        open={aiOpen}
+        onCancel={() => setAiOpen(false)}
+        onOk={applyAiAssignments}
+        confirmLoading={aiLoading}
+        okText="Appliquer"
+        cancelText="Annuler"
+      >
+        <div className="space-y-3">
+          <div className="text-sm text-gray-600">{aiProposals.length} assignation(s) proposée(s).</div>
+          <List
+            size="small"
+            bordered
+            dataSource={aiProposals}
+            renderItem={(p) => (
+              <List.Item>{`Seat #${p.busSeatId} -> Passenger #${p.passengerId}`}</List.Item>
+            )}
+            style={{ maxHeight: 240, overflow: "auto" }}
+          />
+        </div>
+      </Modal>
 
       <Modal
         title="Créer un voyage"
@@ -291,6 +351,7 @@ export default function VoyagesManager() {
                   <Space>
                     <Button size="small" onClick={() => openDrawerFor(r)}>Voir remplissage</Button>
                     <Button size="small" type="primary" onClick={() => autoAssign(r.id)} loading={loading}>Auto-assigner</Button>
+                    <Button size="small" onClick={() => { setSelectedVoyage(r); openAiPreview(r.id); }} loading={aiLoading}>IA: Proposer remplissage</Button>
                   </Space>
                 ),
               },

@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import { prisma } from '@/server/db/prisma';
+import { getRequesterFromHeaders } from '@/server/auth/requester';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // TODO: Get agenceId from authenticated user session
-    const agenceId = 1; // Placeholder for now
+    const requester = await getRequesterFromHeaders(request.headers);
+    const agenceId = requester.agenceId || undefined;
+    if (!agenceId) return NextResponse.json({ error: 'Aucune agence associée' }, { status: 403 });
 
     const agency = await prisma.agence.findUnique({
       where: { id: agenceId },
@@ -27,8 +29,9 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
-    // TODO: Get agenceId from authenticated user session
-    const agenceId = 1; // Placeholder for now
+    const requester = await getRequesterFromHeaders(request.headers);
+    const agenceId = requester.agenceId || undefined;
+    if (!agenceId) return NextResponse.json({ error: 'Aucune agence associée' }, { status: 403 });
     
     const body = await request.json();
     const { name, phone, address } = body;

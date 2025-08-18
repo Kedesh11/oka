@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/db/prisma';
+import { getRequesterFromHeaders } from '@/server/auth/requester';
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // TODO: Filter trajets by agenceId once authentication is implemented
+    const req = await getRequesterFromHeaders(request.headers);
+    const isGlobal = req.role === 'Admin' || req.agenceId === null;
     const trajets = await prisma.trajet.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
+      where: isGlobal ? {} : { agenceId: req.agenceId ?? undefined },
+      orderBy: { createdAt: 'desc' },
     });
 
     return NextResponse.json(trajets);
@@ -23,6 +24,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const reqr = await getRequesterFromHeaders(request.headers);
     const body = await request.json();
     const { depart, arrivee, heure, prixAdulte, prixEnfant, statut, agenceId } = body;
 
@@ -33,8 +35,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Enforce access: Admin peut créer pour n'importe quelle agence; sinon, forcer agenceId=requérant.agenceId
+    let finalAgenceId = agenceId as number;
+    if (reqr.role !== 'Admin') {
+      if (!reqr.agenceId) {
+        return NextResponse.json({ error: "Droits insuffisants" }, { status: 403 });
+      }
+      finalAgenceId = reqr.agenceId;
+    }
+
     // Ensure the agency exists to avoid FK constraint errors
-    const agency = await prisma.agence.findUnique({ where: { id: agenceId } });
+    const agency = await prisma.agence.findUnique({ where: { id: finalAgenceId } });
     if (!agency) {
       return NextResponse.json(
         { error: "L'agence spécifiée n'existe pas" },
@@ -50,7 +61,7 @@ export async function POST(request: NextRequest) {
         prixAdulte,
         prixEnfant,
         statut: statut as any, // Cast to match Prisma enum type
-        agenceId,
+        agenceId: finalAgenceId,
       },
     });
 

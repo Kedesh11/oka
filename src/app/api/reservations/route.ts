@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { reservationService } from "@/server/services/reservationService";
 import { StatutReservation } from "@prisma/client";
 import { ReservationsQuerySchema, CreateReservationSchema } from "@/features/reservations/schemas";
+import { getRequesterFromHeaders } from "@/server/auth/requester";
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,7 +14,13 @@ export async function GET(req: NextRequest) {
     }
     const { trajetId, statut } = parsed.data;
 
-    const reservations = await reservationService.list({ trajetId, statut: statut as StatutReservation | undefined });
+    const requester = await getRequesterFromHeaders(req.headers);
+    const isGlobal = requester.role === "Admin" || requester.agenceId === null;
+    const reservations = await reservationService.list({
+      trajetId,
+      statut: statut as StatutReservation | undefined,
+      agenceId: isGlobal ? undefined : requester.agenceId!,
+    });
 
     return NextResponse.json(reservations);
   } catch (e) {
@@ -23,12 +30,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const requester = await getRequesterFromHeaders(req.headers);
     const body = await req.json();
     const parsed = CreateReservationSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid body", details: parsed.error.flatten() }, { status: 400 });
     }
-    const created = await reservationService.create(parsed.data);
+    const created = await reservationService.create(parsed.data, requester);
     return NextResponse.json(created, { status: 201 });
   } catch (e) {
     console.error("[POST /api/reservations]", e);
@@ -40,6 +48,9 @@ export async function POST(req: NextRequest) {
     if (code === "P2003") {
       // Foreign key constraint failed (likely invalid trajetId)
       return NextResponse.json({ error: "FK_CONSTRAINT", details: "Invalid trajetId" }, { status: 400 });
+    }
+    if (code === 403 || msg === 'FORBIDDEN') {
+      return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 });
     }
     return NextResponse.json({ error: msg, code }, { status: 500 });
   }

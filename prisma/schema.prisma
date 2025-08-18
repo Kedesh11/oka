@@ -68,6 +68,7 @@ model User {
   updatedAt DateTime   @updatedAt
   agenceId  Int?       // Relation avec l'agence (optionnel pour les clients)
   agence    Agence?    @relation(fields: [agenceId], references: [id])
+  resetTokens PasswordResetToken[]
 }
 
 model Agence {
@@ -213,4 +214,16 @@ model Report {
   url       String?      // URL to download the report
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+}
+
+// --- Auth helpers ---
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
 }
