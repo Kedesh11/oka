@@ -1,61 +1,47 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole, UserStatus } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // Créer des agences de test (avec gestion des doublons)
-  let agence1;
-  try {
-    agence1 = await prisma.agence.create({
-      data: {
-        name: 'Transport Libreville',
-        email: 'contact@transport-libreville.ga',
-        phone: '+241 01 23 45 67',
-        address: '123 Avenue de la Paix, Libreville',
-        zone: 'Libreville'
-      }
-    });
-  } catch (error) {
-    agence1 = await prisma.agence.findUnique({
-      where: { email: 'contact@transport-libreville.ga' }
-    });
-  }
+  // Créer des agences de test (garanti non null via upsert)
+  const agence1 = await prisma.agence.upsert({
+    where: { email: 'contact@transport-libreville.ga' },
+    update: {},
+    create: {
+      name: 'Transport Libreville',
+      email: 'contact@transport-libreville.ga',
+      phone: '+241 01 23 45 67',
+      address: '123 Avenue de la Paix, Libreville',
+      zone: 'Libreville',
+    },
+  });
 
-  let agence2;
-  try {
-    agence2 = await prisma.agence.create({
-      data: {
-        name: 'Voyages Port-Gentil',
-        email: 'info@voyages-portgentil.ga',
-        phone: '+241 02 34 56 78',
-        address: '456 Boulevard Maritime, Port-Gentil',
-        zone: 'Port-Gentil'
-      }
-    });
-  } catch (error) {
-    agence2 = await prisma.agence.findUnique({
-      where: { email: 'info@voyages-portgentil.ga' }
-    });
-  }
+  const agence2 = await prisma.agence.upsert({
+    where: { email: 'info@voyages-portgentil.ga' },
+    update: {},
+    create: {
+      name: 'Voyages Port-Gentil',
+      email: 'info@voyages-portgentil.ga',
+      phone: '+241 02 34 56 78',
+      address: '456 Boulevard Maritime, Port-Gentil',
+      zone: 'Port-Gentil',
+    },
+  });
 
-  let agence3;
-  try {
-    agence3 = await prisma.agence.create({
-      data: {
-        name: 'Express Oyem',
-        email: 'contact@express-oyem.ga',
-        phone: '+241 03 45 67 89',
-        address: '789 Route Nationale, Oyem',
-        zone: 'Oyem'
-      }
-    });
-  } catch (error) {
-    agence3 = await prisma.agence.findUnique({
-      where: { email: 'contact@express-oyem.ga' }
-    });
-  }
+  const agence3 = await prisma.agence.upsert({
+    where: { email: 'contact@express-oyem.ga' },
+    update: {},
+    create: {
+      name: 'Express Oyem',
+      email: 'contact@express-oyem.ga',
+      phone: '+241 03 45 67 89',
+      address: '789 Route Nationale, Oyem',
+      zone: 'Oyem',
+    },
+  });
 
   console.log('✅ Agences créées:', { agence1: agence1.name, agence2: agence2.name, agence3: agence3.name });
 
@@ -124,21 +110,45 @@ async function main() {
 
   console.log('✅ Bus créés:', { bus1: bus1.name, bus2: bus2.name });
 
+  // Créer des localités de base (unique sur le nom)
+  const localites = [
+    'Libreville',
+    'Port-Gentil',
+    'Oyem',
+    'Franceville',
+    'Lambaréné',
+    'Mouila',
+    'Bitam',
+  ];
+  // SQLite ne supporte pas skipDuplicates typé -> on itère en upsert-like
+  for (const name of localites) {
+    try {
+      await prisma.localite.create({ data: { name } });
+    } catch {
+      // ignore duplicate
+    }
+  }
+  console.log('✅ Localités insérées');
+
   // Créer des utilisateurs de test
-  const userData = [
-    { name: 'Admin Principal', email: 'admin@oka.com', role: 'Admin', status: 'active' },
-    { name: 'Marie Martin', email: 'marie@agence.com', role: 'Agence', status: 'active' },
-    { name: 'Pierre Durand', email: 'pierre@client.com', role: 'Client', status: 'active' },
-    { name: 'Jean Dupont', email: 'jean@example.com', role: 'Client', status: 'inactive' },
-    { name: 'Sophie Bernard', email: 'sophie@agence.com', role: 'Agence', status: 'active' },
+  const userData: Array<{ name: string; email: string; role: UserRole; status: UserStatus }> = [
+    { name: 'Admin Principal', email: 'admin@oka.com', role: UserRole.Admin, status: UserStatus.active },
+    { name: 'Marie Martin', email: 'marie@agence.com', role: UserRole.Agence, status: UserStatus.active },
+    { name: 'Pierre Durand', email: 'pierre@client.com', role: UserRole.Client, status: UserStatus.active },
+    { name: 'Jean Dupont', email: 'jean@example.com', role: UserRole.Client, status: UserStatus.inactive },
+    { name: 'Sophie Bernard', email: 'sophie@agence.com', role: UserRole.Agence, status: UserStatus.active },
   ];
 
+  const hashedPassword = await bcrypt.hash('password123', 10);
   for (const userInfo of userData) {
     try {
       await prisma.user.create({
         data: {
-          ...userInfo,
-          password: 'password123', // Dans un vrai projet, le mot de passe serait hashé
+          name: userInfo.name,
+          email: userInfo.email,
+          role: userInfo.role,
+          status: userInfo.status,
+          password: hashedPassword, // Mot de passe hashé
           phone: `+241 0123456${Math.floor(Math.random() * 9)}`,
           address: `Adresse ${Math.floor(Math.random() * 100)}`,
           lastLogin: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000), // Dernière connexion dans les 7 derniers jours

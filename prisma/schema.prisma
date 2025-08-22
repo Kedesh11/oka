@@ -216,6 +216,13 @@ model Report {
   updatedAt DateTime     @updatedAt
 }
 
+// --- Locations ---
+
+model Localite {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+}
+
 // --- Auth helpers ---
 
 model PasswordResetToken {

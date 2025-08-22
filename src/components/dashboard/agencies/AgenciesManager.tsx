@@ -177,30 +177,39 @@ export default function AgenciesManager() {
       dataIndex: 'name',
       key: 'name',
       sorter: (a: Agency, b: Agency) => a.name.localeCompare(b.name),
+      ellipsis: true,
+      width: 180,
     },
     {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
       render: (email: string) => email || '-',
+      ellipsis: true,
+      width: 220,
     },
     {
       title: 'Téléphone',
       dataIndex: 'phone',
       key: 'phone',
       render: (phone: string) => phone || '-',
+      width: 140,
     },
     {
       title: 'Zone géographique',
       dataIndex: 'zone',
       key: 'zone',
       render: (zone: string) => zone || '-',
+      ellipsis: true,
+      width: 200,
     },
     {
       title: 'Adresse',
       dataIndex: 'address',
       key: 'address',
       render: (address: string) => address || '-',
+      ellipsis: true,
+      width: 260,
     },
     {
       title: 'Trajets',
@@ -208,6 +217,7 @@ export default function AgenciesManager() {
       key: 'trajets',
       render: (_count: any) => _count?.trajets || 0,
       sorter: (a: Agency, b: Agency) => (a._count?.trajets || 0) - (b._count?.trajets || 0),
+      width: 100,
     },
     {
       title: 'Bus',
@@ -215,6 +225,7 @@ export default function AgenciesManager() {
       key: 'buses',
       render: (_count: any) => _count?.buses || 0,
       sorter: (a: Agency, b: Agency) => (a._count?.buses || 0) - (b._count?.buses || 0),
+      width: 90,
     },
     {
       title: 'Date de création',
@@ -223,6 +234,7 @@ export default function AgenciesManager() {
       render: (date: string) => new Date(date).toLocaleDateString('fr-FR'),
       sorter: (a: Agency, b: Agency) => 
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      width: 140,
     },
     {
       title: 'Actions',
@@ -264,6 +276,8 @@ export default function AgenciesManager() {
           </Popconfirm>
         </Space>
       ),
+      width: 220,
+      fixed: 'right' as const,
     },
   ];
 
@@ -283,19 +297,23 @@ export default function AgenciesManager() {
           </Button>
         </div>
 
-                 <Table
-           columns={columns}
-           dataSource={agencies}
-           rowKey="id"
-           loading={loading}
-           pagination={{
-             pageSize: 4,
-             showSizeChanger: false,
-             showQuickJumper: true,
-             showTotal: (total, range) =>
-               `${range[0]}-${range[1]} sur ${total} agences`,
-           }}
-                  />
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
+            dataSource={agencies}
+            rowKey="id"
+            loading={loading}
+            tableLayout="fixed"
+            scroll={{ x: true }}
+            pagination={{
+              pageSize: 4,
+              showSizeChanger: false,
+              showQuickJumper: true,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} sur ${total} agences`,
+            }}
+          />
+        </div>
        </Card>
 
       <Modal

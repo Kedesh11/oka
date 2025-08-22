@@ -14,7 +14,7 @@ export const AgencySchema = z.object({
   phone: z.string().optional().or(z.literal("")).transform(val => val === "" ? null : val),
   address: z.string().optional().or(z.literal("")).transform(val => val === "" ? null : val),
   zone: z.string().optional().or(z.literal("")).transform(val => val === "" ? null : val),
-});
+}).strict();
 
 export const CreateAgencySchema = AgencySchema.omit({ id: true });
 export const UpdateAgencySchema = CreateAgencySchema.partial();

@@ -1,78 +1,60 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import { prisma } from '@/server/db/prisma';
 
 // GET - Récupérer les statistiques système
 export async function GET() {
-  try {
-    // Compter les agences
-    const agenciesCount = await prisma.agence.count();
-    
-    // Compter les utilisateurs
-    const usersCount = await prisma.user.count();
-    
-    // Compter les voyages actifs (ceux qui ont une date future)
-    const activeVoyagesCount = await prisma.voyage.count({
-      where: {
-        date: {
-          gte: new Date(),
-        },
-      },
-    });
-    
-    // Calculer les revenus (somme des prix des réservations confirmées)
-    const confirmedReservations = await prisma.reservation.findMany({
-      where: {
-        statut: 'confirmee',
-      },
-      include: {
-        trajet: true,
-      },
-    });
-    
-    const totalRevenue = confirmedReservations.reduce((sum: number, reservation: any) => {
-      if (reservation.trajet) {
-        const adultPrice = reservation.trajet.prixAdulte * (reservation.nbVoyageurs - reservation.childrenCount);
-        const childPrice = reservation.trajet.prixEnfant * reservation.childrenCount;
-        return sum + adultPrice + childPrice;
-      }
-      return sum;
-    }, 0);
-    
-    // Calculer le taux de réservation (réservations confirmées / total des voyages)
-    const totalVoyages = await prisma.voyage.count();
-    const confirmedReservationsCount = await prisma.reservation.count({
-      where: {
-        statut: 'confirmee',
-      },
-    });
-    
-    const bookingRate = totalVoyages > 0 ? Math.round((confirmedReservationsCount / totalVoyages) * 100) : 0;
-    
-    // Statistiques simulées pour la satisfaction et la ponctualité
-    const satisfactionRate = 92; // Simulé
-    const punctualityRate = 78; // Simulé
-    
-    const stats = {
-      agencies: agenciesCount,
-      users: usersCount,
-      activeVoyages: activeVoyagesCount,
-      revenue: new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'XAF',
-        minimumFractionDigits: 0,
-      }).format(totalRevenue),
-      bookingRate,
-      satisfactionRate,
-      punctualityRate,
-    };
+  // Helpers robustes pour éviter les 500 en cas de migrations incomplètes
+  const safeCount = async (cb: () => Promise<number>): Promise<number> => {
+    try { return await cb(); } catch { return 0; }
+  };
+  const safeFindMany = async <T>(cb: () => Promise<T[]>): Promise<T[]> => {
+    try { return await cb(); } catch { return []; }
+  };
 
-    return NextResponse.json(stats);
-  } catch (error) {
-    console.error('Erreur lors de la récupération des statistiques:', error);
-    return NextResponse.json(
-      { error: 'Erreur lors de la récupération des statistiques' },
-      { status: 500 }
-    );
-  }
+  const [agenciesCount, usersCount, activeVoyagesCount] = await Promise.all([
+    safeCount(() => prisma.agence.count()),
+    safeCount(() => prisma.user.count()),
+    safeCount(() => prisma.voyage.count({ where: { date: { gte: new Date() } } })),
+  ]);
+
+  const confirmedReservations = await safeFindMany(() => prisma.reservation.findMany({
+    where: { statut: 'confirmee' },
+    include: { trajet: true },
+  }));
+
+  const totalRevenue = confirmedReservations.reduce((sum: number, reservation: any) => {
+    const nbVoyageurs = Number(reservation?.nbVoyageurs ?? 0) || 0;
+    const childrenCount = Number(reservation?.childrenCount ?? 0) || 0;
+    const adultCount = Math.max(nbVoyageurs - childrenCount, 0);
+    const prixAdulte = Number(reservation?.trajet?.prixAdulte ?? 0) || 0;
+    const prixEnfant = Number(reservation?.trajet?.prixEnfant ?? 0) || 0;
+    return sum + (adultCount * prixAdulte) + (childrenCount * prixEnfant);
+  }, 0);
+
+  const [totalVoyages, confirmedReservationsCount] = await Promise.all([
+    safeCount(() => prisma.voyage.count()),
+    safeCount(() => prisma.reservation.count({ where: { statut: 'confirmee' } })),
+  ]);
+  const bookingRate = totalVoyages > 0 ? Math.round((confirmedReservationsCount / totalVoyages) * 100) : 0;
+
+  // Valeurs simulées stables
+  const satisfactionRate = 92;
+  const punctualityRate = 78;
+
+  const stats = {
+    agencies: agenciesCount,
+    users: usersCount,
+    activeVoyages: activeVoyagesCount,
+    revenue: new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'XAF',
+      minimumFractionDigits: 0,
+    }).format(totalRevenue),
+    bookingRate,
+    satisfactionRate,
+    punctualityRate,
+  };
+
+  return NextResponse.json(stats);
 }

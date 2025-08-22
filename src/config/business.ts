@@ -1,0 +1,2 @@
+export const SERVICE_FEE_FCFA = 1000;
+export const CONVOCATION_MINUTES_BEFORE = 30;

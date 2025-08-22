@@ -6,7 +6,14 @@ export const agencyRepo = {
   async findMany() {
     return prisma.agence.findMany({
       orderBy: { createdAt: "desc" },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        address: true,
+        zone: true,
+        createdAt: true,
         _count: {
           select: {
             trajets: true,
@@ -18,11 +25,26 @@ export const agencyRepo = {
   },
 
   async findById(id: number) {
-    return prisma.agence.findUnique({ where: { id } });
+    return prisma.agence.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        address: true,
+        zone: true,
+        createdAt: true,
+      },
+    });
   },
 
   async findByName(name: string) {
-    return prisma.agence.findFirst({ where: { name } });
+    // Only select id to check existence, avoiding selecting any legacy columns
+    return prisma.agence.findFirst({
+      where: { name },
+      select: { id: true },
+    });
   },
   async create(data: CreateAgencyInput) {
     return prisma.agence.create({ data });

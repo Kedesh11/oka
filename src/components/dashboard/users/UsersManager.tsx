@@ -221,11 +221,15 @@ export default function UsersManager() {
       dataIndex: 'name',
       key: 'name',
       sorter: (a: User, b: User) => a.name.localeCompare(b.name),
+      ellipsis: true,
+      width: 180,
     },
     {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
+      ellipsis: true,
+      width: 220,
     },
     {
       title: 'Rôle',
@@ -240,6 +244,7 @@ export default function UsersManager() {
         { text: 'Client', value: 'Client' },
       ],
       onFilter: (value: React.Key | boolean, record: User) => record.role === value,
+      width: 110,
     },
     {
       title: 'Statut',
@@ -250,12 +255,15 @@ export default function UsersManager() {
           {status === 'active' ? 'Actif' : 'Inactif'}
         </Tag>
       ),
+      width: 110,
     },
     {
       title: 'Agence',
       dataIndex: 'agence',
       key: 'agence',
       render: (agence: any) => agence ? agence.name : '-',
+      ellipsis: true,
+      width: 200,
     },
     {
       title: 'Dernière connexion',
@@ -263,6 +271,7 @@ export default function UsersManager() {
       key: 'lastLogin',
       render: (lastLogin: string) => 
         lastLogin ? new Date(lastLogin).toLocaleDateString('fr-FR') : 'Jamais',
+      width: 160,
     },
     {
       title: 'Actions',
@@ -304,6 +313,8 @@ export default function UsersManager() {
           </Popconfirm>
         </Space>
       ),
+      width: 220,
+      fixed: 'right' as const,
     },
   ];
 
@@ -323,22 +334,26 @@ export default function UsersManager() {
           </Button>
         </div>
 
-        <Table
-          columns={columns}
-          dataSource={users}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            pageSize: 4,
-            showSizeChanger: false,
-            showQuickJumper: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} sur ${total} utilisateurs`,
-          }}
-          locale={{
-            emptyText: 'Aucun utilisateur trouvé'
-          }}
-        />
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
+            dataSource={users}
+            rowKey="id"
+            loading={loading}
+            tableLayout="fixed"
+            scroll={{ x: true }}
+            pagination={{
+              pageSize: 4,
+              showSizeChanger: false,
+              showQuickJumper: true,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} sur ${total} utilisateurs`,
+            }}
+            locale={{
+              emptyText: 'Aucun utilisateur trouvé'
+            }}
+          />
+        </div>
       </Card>
 
       {/* Modal pour créer/modifier un utilisateur */}
