@@ -221,7 +221,7 @@ const BookingDetailsPage = () => {
                 title="Total estimé"
                 value={adults * reservation.trajet.prixAdulte + children * reservation.trajet.prixEnfant}
                 suffix="FCFA"
-                valueStyle={{ color: '#1890ff' }}
+                valueStyle={{ color: '#00B140' }}
               />
             </Card>
           </Col>
@@ -249,7 +249,7 @@ const BookingDetailsPage = () => {
             <Descriptions.Item label="Adultes">{updatedReservation.adultCount}</Descriptions.Item>
             <Descriptions.Item label="Enfants">{updatedReservation.childrenCount}</Descriptions.Item>
             <Descriptions.Item label="Montant Total">
-              <Text strong style={{ color: '#1890ff' }}>{updatedReservation.totalAmount} FCFA</Text>
+              <Text strong style={{ color: '#00B140' }}>{updatedReservation.totalAmount} FCFA</Text>
             </Descriptions.Item>
           </Descriptions>
         </Modal>

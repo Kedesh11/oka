@@ -177,7 +177,7 @@ export default function RoutesManager() {
       dataIndex: "statut",
       key: "statut",
       render: (statut: string) => (
-        <Tag color={statut === "actif" ? "green" : "red"}>
+        <Tag color={statut === "actif" ? "#00B140" : "red"}>
           {statut}
         </Tag>
       ),
@@ -200,7 +200,7 @@ export default function RoutesManager() {
       <SectionHeader
         title={<Title level={2} style={{ margin: 0 }}>Gestion des Trajets</Title>}
         actions={(
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => handleAddEdit()}>
+          <Button type="primary" className="btn-kani" icon={<PlusOutlined />} onClick={() => handleAddEdit()}>
             Ajouter un Trajet
           </Button>
         )}

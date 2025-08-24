@@ -52,12 +52,12 @@ const topRoutes = [
 
 const revenueByAgency = [
   { name: 'Transport Express', value: 35, color: '#01be65' },
-  { name: 'Voyages Gabon', value: 25, color: '#1890ff' },
+  { name: 'Voyages Gabon', value: 25, color: '#00B140' },
   { name: 'Express Libreville', value: 20, color: '#faad14' },
   { name: 'Autres', value: 20, color: '#52c41a' },
 ];
 
-const COLORS = ['#01be65', '#1890ff', '#faad14', '#52c41a', '#f5222d'];
+const COLORS = ['#01be65', '#00B140', '#faad14', '#52c41a', '#f5222d'];
 
 export const SalesChart: React.FC = () => {
   const [timeRange, setTimeRange] = useState('6m');
@@ -134,7 +134,7 @@ export const SalesChart: React.FC = () => {
                   <Tooltip content={<CustomTooltip />} />
                   <Legend />
                   <Bar yAxisId="left" dataKey="ventes" fill="#01be65" name="Ventes (FCFA)" />
-                  <Bar yAxisId="right" dataKey="reservations" fill="#1890ff" name="Réservations" />
+                  <Bar yAxisId="right" dataKey="reservations" fill="#52c41a" name="Réservations" />
                 </BarChart>
               ) : (
                 <LineChart data={salesData}>
@@ -145,7 +145,7 @@ export const SalesChart: React.FC = () => {
                   <Tooltip content={<CustomTooltip />} />
                   <Legend />
                   <Line yAxisId="left" type="monotone" dataKey="ventes" stroke="#01be65" name="Ventes (FCFA)" />
-                  <Line yAxisId="right" type="monotone" dataKey="reservations" stroke="#1890ff" name="Réservations" />
+                  <Line yAxisId="right" type="monotone" dataKey="reservations" stroke="#52c41a" name="Réservations" />
                 </LineChart>
               )}
             </ResponsiveContainer>
@@ -162,7 +162,7 @@ export const SalesChart: React.FC = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name} ${(((percent ?? 0) * 100)).toFixed(0)}%`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -237,15 +237,15 @@ export const SalesChart: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <Text type="secondary">Réservations</Text>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-green-600">
                   72
                 </div>
-                <div className="flex items-center gap-1 text-sm text-blue-600">
+                <div className="flex items-center gap-1 text-sm text-green-600">
                   <TrendingUp size={12} />
                   +8.3%
                 </div>
               </div>
-              <Users className="text-2xl text-blue-600 opacity-20" />
+              <Users className="text-2xl text-green-600 opacity-20" />
             </div>
           </Card>
         </Col>

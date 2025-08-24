@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
+import type { PlotParams } from "react-plotly.js";
 import { useSearchParams } from "next/navigation";
 import { Layout, Menu, theme, Button, Space, Typography, Card, Row, Col, Statistic, List, Tag, Spin, Empty, message, Form, Input } from "antd";
 import {
@@ -11,7 +13,6 @@ import {
   SettingOutlined,
   CalendarOutlined,
   DollarOutlined,
-  FileTextOutlined
 } from "@ant-design/icons";
 import FleetManager from "@/components/dashboard/fleet/FleetManager";
 import VoyagesManager from "@/components/dashboard/fleet/VoyagesManager";
@@ -19,6 +20,9 @@ import RoutesManager from "@/components/dashboard/routes/RoutesManager"; // New 
 import ReservationsManager from "@/components/dashboard/reservations/ReservationsManager"; // New import
 import AgentsManager from "@/components/dashboard/agencies/AgentsManager";
 import { useApiUrl } from "@/hooks/use-api-url";
+
+// Plotly client-only with explicit prop typing to satisfy TS
+const Plot = dynamic<PlotParams>(() => import("react-plotly.js"), { ssr: false });
 
 const { Header, Content, Sider } = Layout;
 const { Title, Text } = Typography;
@@ -38,6 +42,13 @@ const AgencyOverview = () => {
   const [loading, setLoading] = React.useState(true);
   const [messageApi, contextHolder] = message.useMessage();
   const { getApiUrl } = useApiUrl();
+  const [trends, setTrends] = React.useState<{
+    dates: string[];
+    reservations: number[];
+    activeVoyages: number[];
+    revenue: number[];
+  } | null>(null);
+  const [trendsLoading, setTrendsLoading] = React.useState(true);
 
   React.useEffect(() => {
     const fetchStats = async () => {
@@ -57,36 +68,159 @@ const AgencyOverview = () => {
         setLoading(false);
       }
     };
+    const fetchTrends = async () => {
+      setTrendsLoading(true);
+      try {
+        const res = await fetch(getApiUrl("/api/agence/stats/trends"));
+        const json = await res.json();
+        if (res.ok) {
+          setTrends(json);
+        } else {
+          setTrends(null);
+        }
+      } catch (e) {
+        console.error("Error fetching trends:", e);
+        setTrends(null);
+      } finally {
+        setTrendsLoading(false);
+      }
+    };
     fetchStats();
+    fetchTrends();
   }, [getApiUrl, messageApi]);
 
-  const statsData = [
-    { title: "Trajets publiés", value: stats?.totalTrajets, icon: <CarOutlined />, color: "#1890ff" },
-    { title: "Trajets actifs", value: stats?.activeTrajets, icon: <CarOutlined />, color: "#52c41a" },
-    { title: "Réservations", value: stats?.totalReservations, icon: <UsergroupAddOutlined />, color: "#faad14" },
-    { title: "Confirmées", value: stats?.confirmedReservations, icon: <UserOutlined />, color: "#722ed1" },
-    { title: "Bus en flotte", value: stats?.totalBuses, icon: <CarOutlined />, color: "#eb2f96" },
-    { title: "Voyages actifs", value: stats?.activeVoyages, icon: <CalendarOutlined />, color: "#13c2c2" },
-    { title: "Revenus (FCFA)", value: stats?.totalRevenue?.toLocaleString() || "0", icon: <DollarOutlined />, color: "#f5222d" },
-  ];
+  const metricMeta: Record<string, { title: string; icon: React.ReactNode; color: string; format?: (v: number) => string | number }> = {
+    totalTrajets: { title: "Trajets publiés", icon: <CarOutlined />, color: "#00B140" },
+    activeTrajets: { title: "Trajets actifs", icon: <CarOutlined />, color: "#52c41a" },
+    totalReservations: { title: "Réservations", icon: <UsergroupAddOutlined />, color: "#faad14" },
+    confirmedReservations: { title: "Confirmées", icon: <UserOutlined />, color: "#722ed1" },
+    totalBuses: { title: "Bus en flotte", icon: <CarOutlined />, color: "#eb2f96" },
+    activeVoyages: { title: "Voyages actifs", icon: <CalendarOutlined />, color: "#13c2c2" },
+    totalRevenue: { title: "Revenus (FCFA)", icon: <DollarOutlined />, color: "#f5222d", format: (v) => v.toLocaleString() }
+  };
+
+  const statsData = React.useMemo(() => {
+    if (!stats) return [] as { title: string; value: string | number | undefined; icon: React.ReactNode; color: string }[];
+    const entries = Object.entries(stats) as Array<[string, any]>;
+    return entries
+      .filter(([, value]) => typeof value === 'number')
+      .map(([key, value]) => {
+        const meta = metricMeta[key] ?? {
+          title: key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()),
+          icon: <PieChartOutlined />,
+          color: "#00B140"
+        };
+        const displayValue = meta.format ? meta.format(value as number) : (value as number);
+        return { title: meta.title, value: displayValue, icon: meta.icon, color: meta.color };
+      });
+  }, [stats]);
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen overflow-y-auto space-y-6 pb-8">
       {contextHolder}
       <Title level={2}>Aperçu Général</Title>
+      <Title level={4}>Indicateurs clés</Title>
       <Row gutter={[16, 16]}>
-        {statsData.map((stat, index) => (
-          <Col xs={24} sm={12} lg={8} xl={6} key={index}>
-            <Card loading={loading}>
-              <Statistic
-                title={stat.title}
-                value={stat.value}
-                prefix={React.cloneElement(stat.icon, { style: { color: stat.color } })}
-                valueStyle={{ color: stat.color }}
+        {loading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <Col xs={24} sm={12} lg={8} xl={6} key={`sk-${i}`}>
+                <Card loading />
+              </Col>
+            ))
+          : statsData.length > 0
+          ? statsData.map((stat, index) => (
+              <Col xs={24} sm={12} lg={8} xl={6} key={index}>
+                <Card>
+                  <Statistic
+                    title={stat.title}
+                    value={stat.value}
+                    prefix={<span style={{ color: stat.color }}>{stat.icon}</span>}
+                    valueStyle={{ color: stat.color }}
+                  />
+                </Card>
+              </Col>
+            ))
+          : (
+              <Col span={24}>
+                <Empty description="Aucune statistique disponible" />
+              </Col>
+            )}
+      </Row>
+      {/* Graphes de tendances */}
+      <Title level={4}>Tendances</Title>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} lg={14}>
+          <Card title="Tendance Réservations & Voyages">
+            {trendsLoading ? (
+              <div className="flex items-center justify-center py-10"><Spin /></div>
+            ) : trends && trends.dates?.length ? (
+              <Plot
+                data={[
+                  {
+                    x: trends.dates,
+                    y: trends.reservations,
+                    type: "scatter",
+                    mode: "lines+markers",
+                    name: "Réservations",
+                    line: { color: "#00B140", width: 3 },
+                    marker: { color: "#00B140" }
+                  },
+                  {
+                    x: trends.dates,
+                    y: trends.activeVoyages,
+                    type: "scatter",
+                    mode: "lines+markers",
+                    name: "Voyages actifs",
+                    line: { color: "#52c41a", width: 3, dash: "dot" },
+                    marker: { color: "#52c41a" }
+                  }
+                ]}
+                layout={{
+                  autosize: true,
+                  margin: { l: 40, r: 20, t: 10, b: 40 },
+                  legend: { orientation: "h" },
+                  xaxis: { title: "Date" },
+                  yaxis: { title: "Volume" }
+                }}
+                useResizeHandler
+                style={{ width: "100%", height: 260 }}
+                config={{ displayModeBar: false }}
               />
-            </Card>
-          </Col>
-        ))}
+            ) : (
+              <Empty description="Aucune donnée de tendance" />
+            )}
+          </Card>
+        </Col>
+        <Col xs={24} lg={10}>
+          <Card title="Tendance Revenus (FCFA)">
+            {trendsLoading ? (
+              <div className="flex items-center justify-center py-10"><Spin /></div>
+            ) : trends && trends.dates?.length ? (
+              <Plot
+                data={[
+                  {
+                    x: trends.dates,
+                    y: trends.revenue,
+                    type: "bar",
+                    name: "Revenus",
+                    marker: { color: "#00B140" }
+                  }
+                ]}
+                layout={{
+                  autosize: true,
+                  margin: { l: 40, r: 20, t: 10, b: 40 },
+                  xaxis: { title: "Date" },
+                  yaxis: { title: "FCFA", tickformat: ",d" }
+                }}
+                useResizeHandler
+                style={{ width: "100%", height: 260 }}
+                config={{ displayModeBar: false }}
+              />
+            ) : (
+              <Empty description="Aucune donnée de tendance" />
+            )}
+          </Card>
+        </Col>
       </Row>
       {/* Vous pouvez ajouter d'autres sections comme les activités récentes ici */}
     </div>

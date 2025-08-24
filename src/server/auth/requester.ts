@@ -11,7 +11,13 @@ export type Requester = {
 export async function getRequesterFromHeaders(headers: Headers): Promise<Requester> {
   const email = headers.get("x-user-email") || undefined;
   const role = (headers.get("x-user-role") || "").trim() as Requester["role"];
-  if (!email) return { email: undefined, role: role || "Client" };
+  const agenceIdHeader = headers.get("x-user-agence-id");
+  if (!email) {
+    const agenceId = agenceIdHeader != null && agenceIdHeader !== "" && !Number.isNaN(Number(agenceIdHeader))
+      ? Number(agenceIdHeader)
+      : null;
+    return { email: undefined, role: role || "Client", agenceId };
+  }
   const user = await prisma.user.findUnique({ where: { email }, select: { id: true, role: true, agenceId: true } });
   let isAgencyOwner = false;
   if (user?.agenceId) {

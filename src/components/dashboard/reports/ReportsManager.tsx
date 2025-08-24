@@ -193,7 +193,7 @@ export default function ReportsManager() {
 
   const reportTypes = [
     { type: 'Ventes', title: 'Rapport de Ventes', icon: <DollarOutlined />, color: '#52c41a' },
-    { type: 'Trajets', title: 'Rapport des Trajets', icon: <CarOutlined />, color: '#1890ff' },
+    { type: 'Trajets', title: 'Rapport des Trajets', icon: <CarOutlined />, color: '#00B140' },
     { type: 'Utilisateurs', title: 'Rapport Utilisateurs', icon: <UserOutlined />, color: '#722ed1' },
     { type: 'Réservations', title: 'Rapport Réservations', icon: <FileTextOutlined />, color: '#fa8c16' },
     { type: 'Satisfaction', title: 'Rapport Satisfaction', icon: <CheckCircleOutlined />, color: '#13c2c2' }
@@ -339,7 +339,7 @@ export default function ReportsManager() {
                           <Statistic
                             title="Réservations"
                             value={previewModal.report.summary.totalBookings}
-                            valueStyle={{ color: '#1890ff' }}
+                            valueStyle={{ color: '#00B140' }}
                           />
                         </Col>
                       )}

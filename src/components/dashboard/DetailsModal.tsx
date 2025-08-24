@@ -88,11 +88,11 @@ export default function DetailsModal({ open, onClose, data, type }: DetailsModal
         </h4>
         
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-blue-50 p-4 rounded-lg border">
-            <div className="text-2xl font-bold text-blue-600">
+          <div className="bg-green-50 p-4 rounded-lg border">
+            <div className="text-2xl font-bold text-green-600">
               {data._count?.trajets || 0}
             </div>
-            <div className="text-sm text-blue-600 font-medium">Trajets</div>
+            <div className="text-sm text-green-600 font-medium">Trajets</div>
           </div>
           
           <div className="bg-green-50 p-4 rounded-lg border">

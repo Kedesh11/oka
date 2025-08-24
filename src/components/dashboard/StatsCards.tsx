@@ -35,13 +35,13 @@ const StatCard: React.FC<StatCardProps> = ({
   value, 
   prefix, 
   suffix, 
-  color = '#01be65',
+  color = '#00B140',
   trend,
   icon,
   description 
 }) => {
   return (
-    <Card className="h-full">
+    <Card className="h-full card-kani">
           <div className="flex items-center justify-between">
         <div className="flex-1">
           <Text type="secondary" className="text-sm">{title}</Text>
@@ -57,7 +57,7 @@ const StatCard: React.FC<StatCardProps> = ({
               }}
             />
             {trend && (
-              <div className={`flex items-center gap-1 text-xs ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`flex items-center gap-1 text-xs ${trend.isPositive ? 'text-[#00B140]' : 'text-red-600'}`}>
                 {trend.isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                 <span>{Math.abs(trend.value)}%</span>
               </div>
@@ -95,7 +95,7 @@ const PerformanceMetric: React.FC<PerformanceMetricProps> = ({
   const percentage = Math.round((value / target) * 100);
   
   return (
-    <Card className="h-full">
+    <Card className="h-full card-kani">
       <div className="flex items-center gap-3">
         <div className="text-2xl" style={{ color }}>
           {icon}
@@ -132,14 +132,14 @@ export const StatsCards: React.FC = () => {
       title: 'Taux de réservation',
       value: 85,
       target: 100,
-      color: '#01be65',
+      color: '#00B140',
       icon: <Ticket className="h-6 w-6" />
     },
     {
       title: 'Satisfaction client',
       value: 92,
       target: 100,
-      color: '#1890ff',
+      color: '#00B140',
       icon: <Users className="h-6 w-6" />
     },
     {
@@ -170,7 +170,7 @@ export const StatsCards: React.FC = () => {
       title: 'Nouveaux utilisateurs',
       value: 8,
       prefix: <UserOutlined />,
-      color: '#1890ff',
+      color: '#00B140',
       trend: { value: 5.2, isPositive: true }
     },
     {
@@ -212,7 +212,7 @@ export const StatsCards: React.FC = () => {
               title="Utilisateurs"
               value={stats.users.current}
               prefix={<UserOutlined />}
-              color="#1890ff"
+              color="#00B140"
               trend={{ value: stats.users.trend, isPositive: stats.users.trend > 0 }}
               icon={<Users className="h-8 w-8" />}
               description="Utilisateurs enregistrés"

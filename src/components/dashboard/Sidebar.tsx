@@ -19,9 +19,9 @@ export function Sidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   return (
-    <aside className="flex w-60 md:w-64 lg:w-72 xl:w-80 border-r border-border bg-card/50 backdrop-blur">
+    <aside className="flex w-60 md:w-64 lg:w-72 xl:w-80 border-r border-border bg-white/80 backdrop-blur">
       <div className="flex h-screen flex-col gap-2 p-4">
-        <div className="px-2 py-3 text-xl font-semibold">Oka Voyage</div>
+        <div className="px-2 py-3 text-xl font-semibold text-[#00B140]">Oka Voyage</div>
         <nav className="flex-1 space-y-1">
           {nav.map(({ href, label, icon: Icon }) => {
             // Determine active state considering the `tab` query param when applicable
@@ -34,7 +34,9 @@ export function Sidebar() {
             return (
               <Link key={`${href}-${label}`} href={href} className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-                active ? "bg-primary text-primary-foreground" : "hover:bg-accent"
+                active 
+                  ? "bg-[#00B140] text-white"
+                  : "hover:bg-[#F0F9F4] hover:text-[#00B140]"
               )}>
                 <Icon className="h-4 w-4" />
                 <span>{label}</span>

@@ -141,6 +141,48 @@
 
 
 
+/* Kani Voyage brand utilities */
+@layer utilities {
+  /* Auth background gradient */
+  .bg-auth-kani {
+    background: linear-gradient(180deg, #F0F9F4 0%, #E8F5E8 100%);
+  }
+
+  /* Buttons */
+  .btn-kani {
+    @apply text-white; /* ensure contrast */
+    background-color: #00B140;
+  }
+  .btn-kani:hover {
+    background-color: #00A038;
+  }
+  .btn-kani-outline {
+    color: #00B140;
+    border: 1px solid #00B140;
+    background: transparent;
+  }
+  .btn-kani-outline:hover {
+    color: #FFFFFF;
+    background-color: #00B140;
+  }
+
+  /* Inputs focus */
+  .focus-kani:focus,
+  .focus-kani:focus-within {
+    outline: 2px solid #00B140;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(0, 177, 64, 0.25);
+    border-color: #00B140 !important;
+  }
+
+  /* Cards */
+  .card-kani {
+    border: 1px solid #E9ECEF;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

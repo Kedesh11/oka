@@ -104,7 +104,7 @@ export const AiSuggestions: React.FC = () => {
   const getTypeIcon = (type: Suggestion['type']) => {
     switch (type) {
       case 'optimization':
-        return <RiseOutlined className="text-blue-600" />;
+        return <RiseOutlined className="text-green-600" />;
       case 'alert':
         return <WarningOutlined className="text-red-600" />;
       case 'opportunity':
@@ -119,7 +119,7 @@ export const AiSuggestions: React.FC = () => {
   const getTypeColor = (type: Suggestion['type']) => {
     switch (type) {
       case 'optimization':
-        return 'blue';
+        return 'green';
       case 'alert':
         return 'red';
       case 'opportunity':
@@ -196,7 +196,7 @@ export const AiSuggestions: React.FC = () => {
             <Text type="secondary" className="text-sm">Suggestions actives</Text>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{totalValue.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-green-600">{totalValue.toLocaleString()}</div>
             <Text type="secondary" className="text-sm">FCFA potentiels</Text>
           </div>
         </div>
@@ -336,7 +336,7 @@ export const AiSuggestions: React.FC = () => {
             <Text type="secondary">Impact Revenus</Text>
           </div>
           <div className="text-center p-4 border rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-green-600">
               {activeSuggestions.filter(s => s.impact === 'efficiency').length}
             </div>
             <Text type="secondary">Impact Efficacité</Text>

@@ -37,7 +37,7 @@ export function ReservationsTable() {
   ];
 
   return (
-    <Card title="Réservations récentes" size="small">
+    <Card title="Réservations récentes" size="small" className="card-kani">
       <Table
         columns={columns}
         dataSource={rows}
@@ -46,7 +46,6 @@ export function ReservationsTable() {
           pageSize: 4,
           showSizeChanger: false,
           showQuickJumper: false,
-          showTotal: false,
         }}
         size="small"
       />

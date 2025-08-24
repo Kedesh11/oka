@@ -62,7 +62,7 @@ const ConfirmationPage = () => {
           <Descriptions.Item label="Date">{new Date(reservation.trajet.dateDepart).toLocaleDateString('fr-FR')}</Descriptions.Item>
           <Descriptions.Item label="Voyageurs">{reservation.nbVoyageurs} ({reservation.adultCount} adultes, {reservation.childrenCount} enfants)</Descriptions.Item>
           <Descriptions.Item label="Montant payé">
-            <Text strong style={{ color: '#1890ff' }}>{reservation.totalAmount} FCFA</Text>
+            <Text strong style={{ color: '#00B140' }}>{reservation.totalAmount} FCFA</Text>
           </Descriptions.Item>
         </Descriptions>
 

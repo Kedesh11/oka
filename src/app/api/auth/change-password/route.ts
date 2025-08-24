@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/db/prisma';
 import bcrypt from 'bcryptjs';
 import { getRequesterFromHeaders } from '@/server/auth/requester';
+import { validatePassword } from '@/server/auth/passwordPolicy';
 
 export const runtime = 'nodejs';
 
@@ -12,6 +13,9 @@ export async function POST(req: NextRequest) {
 
     const { oldPassword, newPassword } = await req.json();
     if (!oldPassword || !newPassword) return NextResponse.json({ error: 'Champs requis' }, { status: 400 });
+
+    const policy = validatePassword(newPassword);
+    if (!policy.ok) return NextResponse.json({ error: policy.error }, { status: 400 });
 
     const user = await prisma.user.findUnique({ where: { id: requester.userId } });
     if (!user) return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 });

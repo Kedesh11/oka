@@ -47,7 +47,7 @@ const OverviewTab = () => {
 
   const statsData = [
     { title: 'Agences', value: stats.agencies, icon: <BuildOutlined />, color: '#01be65' },
-    { title: 'Utilisateurs', value: stats.users, icon: <UserOutlined />, color: '#1890ff' },
+    { title: 'Utilisateurs', value: stats.users, icon: <UserOutlined />, color: '#00B140' },
     { title: 'Voyages Actifs', value: stats.activeVoyages, icon: <CarOutlined />, color: '#52c41a' },
     { title: 'Revenus (FCFA)', value: stats.revenue, icon: <DollarOutlined />, color: '#faad14' },
   ];
@@ -111,7 +111,7 @@ const OverviewTab = () => {
               </div>
               <div>
                 <Text>Satisfaction client</Text>
-                <Progress percent={stats.satisfactionRate} strokeColor="#1890ff" />
+                <Progress percent={stats.satisfactionRate} strokeColor="#00B140" />
               </div>
               <div>
                 <Text>Ponctualité</Text>

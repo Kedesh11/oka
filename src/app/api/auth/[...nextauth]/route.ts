@@ -1,11 +1,11 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/server/db/prisma";
 import bcrypt from "bcryptjs";
 
 export const runtime = "nodejs";
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   providers: [
     Credentials({
@@ -24,6 +24,12 @@ const handler = NextAuth({
         if (user.status !== "active") return null;
         const ok = await bcrypt.compare(credentials.password, user.password);
         if (!ok) return null;
+        // Met à jour la dernière connexion
+        try {
+          await prisma.user.update({ where: { id: user.id }, data: { lastLogin: new Date() } });
+        } catch (e) {
+          console.warn("[auth] Échec mise à jour lastLogin:", e);
+        }
         return { id: String(user.id), email: user.email, role: user.role, agenceId: user.agenceId, name: user.name } as any;
       },
     }),
@@ -44,10 +50,25 @@ const handler = NextAuth({
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Redirection sécurisée: autorise uniquement les URLs de même origine
+      try {
+        const fullBase = baseUrl;
+        const target = url.startsWith("/") ? new URL(url, fullBase).toString() : url;
+        if (new URL(target).origin === new URL(fullBase).origin && !url.includes("/api/auth")) {
+          return target;
+        }
+        return fullBase;
+      } catch {
+        return baseUrl;
+      }
+    },
   },
   pages: {
     signIn: "/login",
   },
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

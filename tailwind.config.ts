@@ -10,6 +10,18 @@ export default {
   theme: {
   	extend: {
   		colors: {
+  			// Kani Voyage brand palette
+  			kani: {
+  				DEFAULT: '#00B140', // Vert Kani
+  				dark: '#00A038',
+  				black: '#000000',
+  				white: '#FFFFFF',
+  				gray: {
+  					light: '#F8F9FA',
+  					DEFAULT: '#6C757D',
+  					dark: '#343A40'
+  				}
+  			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

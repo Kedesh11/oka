@@ -18,6 +18,7 @@ export default function AdminAgentsPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [tempPwdDev, setTempPwdDev] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadAgencies() {
@@ -59,7 +60,12 @@ export default function AdminAgentsPage() {
       }
       const parts = ["Agent créé avec succès."];
       if (json.warning) parts.push(json.warning);
-      if (json.tempPassword) parts.push(`Mot de passe provisoire (dev): ${json.tempPassword}`);
+      if (json.tempPassword) {
+        setTempPwdDev(json.tempPassword as string);
+        parts.push(`Mot de passe provisoire (dev) disponible ci-dessous.`);
+      } else {
+        setTempPwdDev(null);
+      }
       setMessage(parts.join(" "));
       setForm({ name: "", email: "", phone: "", agenceId: 0 });
     } catch (e: any) {
@@ -127,10 +133,23 @@ export default function AdminAgentsPage() {
         </div>
 
         {message ? (
-          <div
-            className={`text-sm ${message.startsWith("Agent créé") ? "text-emerald-700" : "text-red-600"}`}
-          >
-            {message}
+          <div className="space-y-2">
+            <div className="text-sm">{message}</div>
+            {tempPwdDev ? (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-medium">Mot de passe provisoire (dev):</span>
+                <code className="px-2 py-1 bg-slate-100 rounded">{tempPwdDev}</code>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try { await navigator.clipboard.writeText(tempPwdDev!); } catch {}
+                  }}
+                  className="px-2 py-1 border rounded hover:bg-slate-50"
+                >
+                  Copier
+                </button>
+              </div>
+            ) : null}
           </div>
         ) : null}
 

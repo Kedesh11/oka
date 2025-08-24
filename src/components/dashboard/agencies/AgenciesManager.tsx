@@ -298,13 +298,14 @@ export default function AgenciesManager() {
     <div className="p-6">
       {contextHolder}
       
-      <Card>
+      <Card className="card-kani">
         <div className="flex justify-between items-center mb-6">
           <Title level={2}>Gestion des Agences</Title>
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleCreate}
+            className="btn-kani"
           >
             Ajouter une agence
           </Button>

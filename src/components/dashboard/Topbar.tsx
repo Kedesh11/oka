@@ -52,7 +52,7 @@ export function Topbar() {
           </div>
           {notifications.length > 0 ? (
             notifications.map((notification) => (
-              <div key={notification.id} className={`p-3 border-b hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''}`}>
+              <div key={notification.id} className={`p-3 border-b hover:bg-gray-50 ${!notification.read ? 'bg-[#F0F9F4]' : ''}`}>
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <p className="text-md">{notification.title}</p>
@@ -61,7 +61,7 @@ export function Topbar() {
                   <p className="text-xs text-gray-400">{notification.time}</p>
                 </div>
                 {!notification.read && (
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                  <div className="w-2 h-2 bg-[#00B140] rounded-full mt-2"></div>
                 )}
               </div>
             ))
@@ -97,7 +97,7 @@ export function Topbar() {
   };
 
   return (
-    <Layout.Header className="bg-[#01be65] text-white px-6 h-14 flex items-center justify-between">
+    <Layout.Header className="bg-[#00B140] text-white px-6 h-14 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <Image src="/images/okalogo.png" alt="Oka Logo" width={28} height={28} />
         <p className="hidden sm:block font-semibold text-white">
@@ -105,7 +105,7 @@ export function Topbar() {
         </p>
       </div>
       
-      <div className="flex items-center gap-3 bg-white">
+      <div className="flex items-center gap-3">
         {/* Notifications */}
         <Dropdown
           menu={{ items: notificationItems }}

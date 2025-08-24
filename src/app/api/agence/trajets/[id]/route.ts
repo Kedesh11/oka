@@ -22,6 +22,16 @@ export async function PUT(
     const isAdmin = requester.role === 'Admin';
     const sameAgency = requester.agenceId != null && requester.agenceId === existing.agenceId;
     if (!isAdmin && !sameAgency) {
+      console.warn('[trajets.PUT] Accès refusé', {
+        id,
+        requester: {
+          email: requester.email,
+          role: requester.role,
+          agenceId: requester.agenceId,
+        },
+        existingAgenceId: existing.agenceId,
+        reason: 'Requester not admin and agency mismatch',
+      });
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
@@ -76,6 +86,16 @@ export async function DELETE(
     const isAdmin = requester.role === 'Admin';
     const sameAgency = requester.agenceId != null && requester.agenceId === existing.agenceId;
     if (!isAdmin && !sameAgency) {
+      console.warn('[trajets.DELETE] Accès refusé', {
+        id,
+        requester: {
+          email: requester.email,
+          role: requester.role,
+          agenceId: requester.agenceId,
+        },
+        existingAgenceId: existing.agenceId,
+        reason: 'Requester not admin and agency mismatch',
+      });
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
