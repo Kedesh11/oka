@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
 import { planSeatsWithLLM } from "@/server/ai/seatPlanner";
+import { getRequesterFromHeaders } from "@/server/auth/requester";
 
 export const runtime = "nodejs";
 
 export async function POST(_: Request, { params }: { params: { id: string } }) {
   try {
+    const req = await getRequesterFromHeaders(_.headers as any);
     const voyageId = Number(params.id);
     if (!Number.isFinite(voyageId)) {
       return NextResponse.json({ error: "ID de voyage invalide" }, { status: 400 });
@@ -14,6 +16,7 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
     const voyage = await prisma.voyage.findUnique({
       where: { id: voyageId },
       include: {
+        trajet: { select: { agenceId: true } },
         bus: { include: { seats: true } },
         reservations: { include: { passengers: true } },
         assignments: true,
@@ -21,6 +24,14 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
     });
 
     if (!voyage) return NextResponse.json({ error: "Voyage non trouvé" }, { status: 404 });
+
+    // Admin plateforme: lecture seule -> POST interdit
+    if (req.role === "Admin") {
+      return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+    }
+    if (!req.agenceId || voyage.trajet.agenceId !== req.agenceId) {
+      return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+    }
 
     const takenSeatIds = new Set(voyage.assignments.map(a => a.busSeatId));
     const passengers = voyage.reservations.flatMap(r => r.passengers);

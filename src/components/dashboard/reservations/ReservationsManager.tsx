@@ -5,7 +5,7 @@ import { Button, Card, Form, Input, Select, Space, Tag, Typography, message, Mod
 import { EditOutlined, DeleteOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { useApiUrl } from "@/hooks/use-api-url";
 
-const { Title, Text, TextArea } = Typography;
+const { Title, Text } = Typography;
 
 interface Reservation {
   id: number;
@@ -65,9 +65,11 @@ export default function ReservationsManager() {
   const handleDelete = async (id: number) => {
     try {
       setLoading(true);
-      // TODO: Implement delete API for reservations
-      // const response = await fetch(getApiUrl(`/api/agence/reservations/${id}`), { method: 'DELETE' });
-      // if (!response.ok) throw new Error('Échec de la suppression');
+      const response = await fetch(getApiUrl(`/api/agence/reservations/${id}`), { method: 'DELETE' });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.error || 'Échec de la suppression');
+      }
       setReservations(prev => prev.filter(r => r.id !== id));
       messageApi.success("Réservation supprimée avec succès");
     } catch (error) {

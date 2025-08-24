@@ -94,9 +94,22 @@ export default function AgenciesManager() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        const errorDetails = errorData.details || errorData.error || 'Aucun détail disponible.';
-        throw new Error(`${errorDetails}`);
+        let errorText = 'Aucun détail disponible.';
+        try {
+          const errorData = await response.json();
+          errorText = errorData.details || errorData.error || errorText;
+        } catch {}
+        if (response.status === 409) {
+          // Unique constraint violation (email/name)
+          if (/email/i.test(errorText)) {
+            throw new Error('Une agence avec cet email existe déjà.');
+          }
+          if (/name|nom/i.test(errorText)) {
+            throw new Error('Une agence avec ce nom existe déjà.');
+          }
+          throw new Error('Conflit de données: doublon détecté.');
+        }
+        throw new Error(`${errorText}`);
       }
 
       messageApi.success(

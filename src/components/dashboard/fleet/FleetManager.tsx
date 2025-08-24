@@ -19,6 +19,7 @@ export default function FleetManager() {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const { getApiUrl } = useApiUrl();
+  const [agenceId, setAgenceId] = useState<number | null>(null);
 
   const fetchBuses = useCallback(async () => {
     setLoading(true);
@@ -36,7 +37,17 @@ export default function FleetManager() {
   }, [getApiUrl, messageApi]);
 
   useEffect(() => {
-    fetchBuses();
+    // Prefetch agence profile to get agenceId
+    (async () => {
+      try {
+        const agency = await apiGet<any>(getApiUrl("/api/agence/profile"), { cache: "no-store" });
+        if (agency?.id) setAgenceId(agency.id);
+      } catch (e: any) {
+        // Non bloquant pour la liste, mais requis pour la création
+        setAgenceId(null);
+      }
+      fetchBuses();
+    })();
   }, [fetchBuses]);
 
   const handleCreate = async () => {
@@ -57,8 +68,10 @@ export default function FleetManager() {
         form.setFields(fieldErrors as any);
         return;
       }
-      // TODO: Get actual agenceId from authenticated user session
-      const agenceId = 1; // Placeholder for now
+      if (!agenceId) {
+        messageApi.error("Agence introuvable: impossible de créer un bus");
+        return;
+      }
 
       const created = await apiPost<any>(getApiUrl("/api/fleet/buses"), { ...values, agenceId });
       const createdParsed = BusSchema.safeParse(created);

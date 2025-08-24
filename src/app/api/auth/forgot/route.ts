@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/db/prisma';
 import crypto from 'crypto';
 import { sendMail } from '@/server/email/mailer';
+import { passwordResetTemplate } from '@/server/email/templates';
 
 export const runtime = 'nodejs';
 
@@ -28,12 +29,8 @@ export async function POST(req: NextRequest) {
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
 
-    const html = `<p>Bonjour,</p>
-<p>Vous avez demandé la réinitialisation de votre mot de passe. Cliquez sur le lien ci-dessous:</p>
-<p><a href="${resetUrl}">Réinitialiser mon mot de passe</a></p>
-<p>Ce lien expirera dans 1 heure.</p>`;
-
-    await sendMail({ to: email, subject: 'Réinitialisation de mot de passe', html });
+    const { subject, html } = passwordResetTemplate({ resetUrl });
+    await sendMail({ to: email, subject, html });
 
     return NextResponse.json({ ok: true });
   } catch (e: any) {

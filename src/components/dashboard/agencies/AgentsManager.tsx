@@ -15,12 +15,13 @@ type Props = {
   agencyId: number;
   agencyEmail: string; // email propriétaire de l'agence
   currentUserEmail: string; // email de l'utilisateur connecté
+  isAgencyOwner: boolean;
 };
 
-export default function AgentsManager({ agencyId, agencyEmail, currentUserEmail }: Props) {
+export default function AgentsManager({ agencyId, agencyEmail, currentUserEmail, isAgencyOwner }: Props) {
   const canCreate = useMemo(
-    () => currentUserEmail?.toLowerCase() === agencyEmail?.toLowerCase(),
-    [currentUserEmail, agencyEmail]
+    () => Boolean(isAgencyOwner),
+    [isAgencyOwner]
   );
   const [loading, setLoading] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -69,8 +70,15 @@ export default function AgentsManager({ agencyId, agencyEmail, currentUserEmail 
         const msg = json?.error || "Échec de création";
         throw new Error(msg);
       }
-      if (json.warning) setCreateMsg(json.warning);
-      else setCreateMsg("Agent créé et email envoyé.");
+      if (json.warning) {
+        const parts = [json.warning];
+        if (json.tempPassword) parts.push(`Mot de passe provisoire (dev): ${json.tempPassword}`);
+        setCreateMsg(parts.join(" "));
+      } else {
+        const parts = ["Agent créé et email envoyé."];
+        if (json.tempPassword) parts.push(`Mot de passe provisoire (dev): ${json.tempPassword}`);
+        setCreateMsg(parts.join(" "));
+      }
       setForm({ name: "", email: "", phone: "" });
       setOpenForm(false);
       await load();
@@ -164,7 +172,9 @@ export default function AgentsManager({ agencyId, agencyEmail, currentUserEmail 
               </div>
 
               {createMsg ? (
-                <div className="text-sm {createMsg?.startsWith('Agent créé') ? 'text-emerald-600' : 'text-red-600'}">
+                <div
+                  className={`text-sm ${createMsg?.startsWith('Agent créé') || createMsg?.startsWith("Utilisateur créé") ? 'text-emerald-600' : 'text-red-600'}`}
+                >
                   {createMsg}
                 </div>
               ) : null}

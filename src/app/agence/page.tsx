@@ -3,8 +3,16 @@ import React, { Suspense, useEffect, useMemo, useState } from "react";
 import NavBar from "@/components/navBar";
 import { useRouter, useSearchParams } from "next/navigation";
 import CardAgence from "@/components/card-agences/cardAgence";
-import { Modal, Form, Input, InputNumber, Switch, Upload, Button, Typography, message } from "antd";
+import { Modal } from "antd";
+import { Form } from "antd";
+import { Input } from "antd";
+import { InputNumber } from "antd";
+import { Switch } from "antd";
+import { Upload } from "antd";
+import { Typography } from "antd";
+import { message } from "antd";
 import { useUploadPreview } from "@/utils/uploadPreview";
+import { SERVICE_FEE_FCFA, CONVOCATION_MINUTES_BEFORE } from "@/config/business";
 
 const { Text } = Typography;
 
@@ -129,8 +137,8 @@ function AgenceList() {
       typeAgence: a.address || "Agence",
       tarifAdulte: a.trajets?.[0]?.prixAdulte ? `${a.trajets[0].prixAdulte} FCFA` : "",
       tarifEnfant: a.trajets?.[0]?.prixEnfant ? `${a.trajets[0].prixEnfant} FCFA` : "",
-      fraisService: "",
-      convocation: "",
+      fraisService: SERVICE_FEE_FCFA,
+      convocation: CONVOCATION_MINUTES_BEFORE,
       depart,
       arrivee,
       _raw: a,

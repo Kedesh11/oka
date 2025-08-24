@@ -182,25 +182,33 @@ export default function AgenceDashboardPage() {
   const currentTab = searchParams.get("tab") || "overview";
 
   // Common data for Agents tab
-  const [me, setMe] = React.useState<{ email: string | null; role: string; agenceId: number | null } | null>(null);
+  const { getApiUrl } = useApiUrl();
+  const [me, setMe] = React.useState<{ email: string | null; role: string; agenceId: number | null; isAgencyOwner: boolean } | null>(null);
   const [agency, setAgency] = React.useState<any>(null);
+  const [agentsTabLoading, setAgentsTabLoading] = React.useState(false);
+  const [agentsTabError, setAgentsTabError] = React.useState<string | null>(null);
   React.useEffect(() => {
     if (currentTab !== 'agents') return;
     (async () => {
+      setAgentsTabLoading(true);
+      setAgentsTabError(null);
       try {
         const [meRes, agRes] = await Promise.all([
-          fetch('/api/auth/me'),
-          fetch('/api/agence/profile'),
+          fetch(getApiUrl('/api/auth/me')),
+          fetch(getApiUrl('/api/agence/profile')),
         ]);
         const meJson = await meRes.json();
         const agJson = await agRes.json();
-        if (meRes.ok) setMe(meJson);
-        if (agRes.ok) setAgency(agJson);
-      } catch (e) {
-        // no-op
+        if (meRes.ok) setMe(meJson); else setAgentsTabError(meJson?.error || 'Erreur chargement profil utilisateur');
+        if (agRes.ok) setAgency(agJson); else setAgentsTabError(agJson?.error || 'Erreur chargement agence');
+      } catch (e: any) {
+        setAgentsTabError(e?.message || 'Erreur réseau');
+      } finally {
+        setAgentsTabLoading(false);
       }
     })();
-  }, [currentTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTab, getApiUrl]);
 
   const renderContent = () => {
     switch (currentTab) {
@@ -211,14 +219,16 @@ export default function AgenceDashboardPage() {
       case "bookings":
         return <ReservationsManager />;
       case "agents":
-        return me && agency ? (
+        if (agentsTabLoading) return <div style={{ padding: 24 }}><Spin /> Chargement…</div>;
+        if (agentsTabError) return <Empty description={agentsTabError} />;
+        if (!agency || !me) return <Empty description="Aucune agence liée à ce compte" />;
+        return (
           <AgentsManager
             agencyId={agency.id}
             agencyEmail={agency.email}
             currentUserEmail={me.email || ''}
+            isAgencyOwner={!!me.isAgencyOwner}
           />
-        ) : (
-          <div>Chargement…</div>
         );
       case "fleet":
         return <FleetManager />;

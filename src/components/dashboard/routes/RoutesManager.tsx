@@ -41,6 +41,7 @@ export default function RoutesManager() {
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
   const { getApiUrl } = useApiUrl();
+  const [agencyId, setAgencyId] = useState<number | null>(null);
 
   const fetchTrajets = useCallback(async () => {
     setLoading(true);
@@ -59,6 +60,18 @@ export default function RoutesManager() {
   }, [getApiUrl, messageApi]);
 
   useEffect(() => {
+    // Load agency profile to get agenceId for POST/PUT payloads (optional for non-admins)
+    (async () => {
+      try {
+        const res = await fetch(getApiUrl("/api/agence/profile"));
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.id) setAgencyId(data.id);
+        }
+      } catch (_) {
+        // ignore, agencyId remains null
+      }
+    })();
     fetchTrajets();
   }, [fetchTrajets]);
 
@@ -119,11 +132,11 @@ export default function RoutesManager() {
         return; // Abort submit
       }
 
-      const payload = {
+      const payload: any = {
         ...values,
         heure: values.heure ? dayjs(values.heure).format("HH:mm") : undefined,
-        agenceId: 1, // TODO: Get actual agenceId from authenticated user session
       };
+      if (agencyId) payload.agenceId = agencyId; // Include only if known (Admin may need to pass it explicitly)
 
       if (editingTrajet) {
         await apiRequest(getApiUrl(`/api/agence/trajets/${editingTrajet.id}`), { method: "PUT", body: payload });
@@ -219,7 +232,7 @@ export default function RoutesManager() {
         confirmLoading={loading}
         styles={{ body: { maxHeight: '70vh', overflowY: 'auto' } }}
         style={{ top: 24 }}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical">
           <Form.Item label="Départ" name="depart" rules={[{ required: true, message: "Veuillez entrer la ville de départ" }]}>

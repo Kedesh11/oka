@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/db/prisma';
+import { getRequesterFromHeaders } from '@/server/auth/requester';
 export const runtime = 'nodejs';
 
 export async function PUT(
@@ -10,6 +11,18 @@ export async function PUT(
     const id = parseInt(params.id);
     if (isNaN(id)) {
       return NextResponse.json({ error: 'ID de trajet invalide' }, { status: 400 });
+    }
+
+    // Access control
+    const requester = await getRequesterFromHeaders(request.headers);
+    const existing = await prisma.trajet.findUnique({ where: { id }, select: { id: true, agenceId: true } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Trajet non trouvé' }, { status: 404 });
+    }
+    const isAdmin = requester.role === 'Admin';
+    const sameAgency = requester.agenceId != null && requester.agenceId === existing.agenceId;
+    if (!isAdmin && !sameAgency) {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -52,6 +65,18 @@ export async function DELETE(
     const id = parseInt(params.id);
     if (isNaN(id)) {
       return NextResponse.json({ error: 'ID de trajet invalide' }, { status: 400 });
+    }
+
+    // Access control
+    const requester = await getRequesterFromHeaders(request.headers);
+    const existing = await prisma.trajet.findUnique({ where: { id }, select: { id: true, agenceId: true } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Trajet non trouvé' }, { status: 404 });
+    }
+    const isAdmin = requester.role === 'Admin';
+    const sameAgency = requester.agenceId != null && requester.agenceId === existing.agenceId;
+    if (!isAdmin && !sameAgency) {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     await prisma.trajet.delete({ where: { id } });

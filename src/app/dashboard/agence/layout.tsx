@@ -53,7 +53,7 @@ export default function AgenceDashboardLayout({ children }: { children: React.Re
         />
       </Sider>
       <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }} />
+        <Header style={{ padding: 0, background: '#001529', color: '#fff' }} />
         <Content style={{ margin: "0 16px" }}>
           <div
             style={{

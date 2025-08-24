@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import { Bell, Search, User, Settings, LogOut, ChevronDown } from "lucide-react";
 import { Dropdown, Badge, Avatar, Button, Input, Space, Typography, Layout } from "antd";
 import { UserOutlined, SettingOutlined, LogoutOutlined, SearchOutlined, BellOutlined, DownOutlined } from "@ant-design/icons";
 
@@ -49,17 +48,17 @@ export function Topbar() {
       label: (
         <div className="w-80 max-h-96 overflow-y-auto">
           <div className="p-3 border-b">
-            <Text strong>Notifications</Text>
+            <p className="font-bold text-xl">Notifications</p>
           </div>
           {notifications.length > 0 ? (
             notifications.map((notification) => (
               <div key={notification.id} className={`p-3 border-b hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''}`}>
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <Text strong className="text-sm">{notification.title}</Text>
-                    <div className="text-xs text-gray-600 mt-1">{notification.message}</div>
+                    <p className="text-md">{notification.title}</p>
+                    <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
                   </div>
-                  <Text className="text-xs text-gray-400">{notification.time}</Text>
+                  <p className="text-xs text-gray-400">{notification.time}</p>
                 </div>
                 {!notification.read && (
                   <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
@@ -67,9 +66,9 @@ export function Topbar() {
               </div>
             ))
           ) : (
-            <div className="p-4 text-center text-gray-500">
+            <p className="p-4 text-center text-gray-500">
               Aucune notification
-            </div>
+            </p>
           )}
           {notifications.length > 0 && (
             <div className="p-2 border-t">
@@ -101,23 +100,12 @@ export function Topbar() {
     <Layout.Header className="bg-[#01be65] text-white px-6 h-14 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <Image src="/images/okalogo.png" alt="Oka Logo" width={28} height={28} />
-        <div className="hidden sm:block font-semibold">
+        <p className="hidden sm:block font-semibold text-white">
           Oka Dashboard
-        </div>
+        </p>
       </div>
       
-      <div className="flex items-center gap-2">
-        {/* Barre de recherche */}
-        <div className="hidden md:flex items-center gap-2 rounded-md bg-white/10 px-2">
-          <SearchOutlined className="text-white/90" />
-          <Input
-            placeholder="Rechercher..."
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="h-8 w-44 bg-transparent border-none text-sm text-white placeholder:text-white/80"
-          />
-        </div>
-
+      <div className="flex items-center gap-3 bg-white">
         {/* Notifications */}
         <Dropdown
           menu={{ items: notificationItems }}
@@ -158,8 +146,8 @@ export function Topbar() {
               className="bg-white/20"
             />
             <div className="hidden sm:block text-left">
-              <div className="text-sm font-medium">Admin</div>
-              <div className="text-xs opacity-80">Administrateur</div>
+              {/* <div className="text-sm font-medium">Admin</div> */}
+              <p className="text-xs opacity-80">Administrateur</p>
             </div>
             <DownOutlined className="opacity-70" />
           </Button>
